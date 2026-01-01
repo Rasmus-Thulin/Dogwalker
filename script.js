@@ -17,12 +17,29 @@ const eveningFeedButton = document.getElementById('eveningFeedButton');
 const morningStatus = document.getElementById('morningStatus');
 const eveningStatus = document.getElementById('eveningStatus');
 
+// ===== PERFORMANCE DETECTION =====
+function isLowPowerDevice() {
+    const ua = navigator.userAgent || '';
+    const isIPad = /iPad/.test(ua);
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return isIPad || prefersReducedMotion;
+}
+
+function applyLowPowerMode() {
+    // Trim heavy visuals on older hardware like iPad Air (MD788KS/A)
+    document.body.classList.add('low-power');
+}
+
 // ===== STATE =====
 let countdownInterval = null;
 let nextWalkTime = null;
 
 // ===== INITIALIZATION =====
 function init() {
+    if (isLowPowerDevice()) {
+        applyLowPowerMode();
+    }
+
     // Check and handle weekly reset
     checkWeeklyReset();
 
@@ -436,48 +453,59 @@ function getTimeAgo(timestamp) {
 
 // ===== NOTIFICATION =====
 function showNotification(message) {
+    const lowPower = document.body.classList.contains('low-power');
+
     // Create notification element
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(0);
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        transform: translate(-50%, -50%) scale(0.95);
+        background: ${lowPower ? '#1f2530' : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'};
         color: white;
-        padding: 2rem 3rem;
-        border-radius: 20px;
-        font-size: 1.5rem;
+        padding: ${lowPower ? '1rem 1.25rem' : '2rem 3rem'};
+        border-radius: 16px;
+        font-size: ${lowPower ? '1.1rem' : '1.5rem'};
         font-weight: 700;
-        box-shadow: 0 20px 60px rgba(79, 172, 254, 0.4);
+        box-shadow: ${lowPower ? 'none' : '0 20px 60px rgba(79, 172, 254, 0.4)'};
         z-index: 1000;
-        animation: notificationPop 0.5s ease-out forwards;
+        ${lowPower ? '' : 'animation: notificationPop 0.5s ease-out forwards;'}
     `;
     notification.textContent = message;
 
     // Add animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes notificationPop {
-            0% { transform: translate(-50%, -50%) scale(0); }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
-        @keyframes notificationFade {
-            to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-        }
-    `;
-    document.head.appendChild(style);
+    let style;
+    if (!lowPower) {
+        style = document.createElement('style');
+        style.textContent = `
+            @keyframes notificationPop {
+                0% { transform: translate(-50%, -50%) scale(0); }
+                50% { transform: translate(-50%, -50%) scale(1.1); }
+                100% { transform: translate(-50%, -50%) scale(1); }
+            }
+            @keyframes notificationFade {
+                to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
 
     document.body.appendChild(notification);
 
     // Remove after 2 seconds
     setTimeout(() => {
-        notification.style.animation = 'notificationFade 0.3s ease-out forwards';
+        if (!lowPower) {
+            notification.style.animation = 'notificationFade 0.25s ease-out forwards';
+        } else {
+            notification.style.opacity = '0';
+        }
         setTimeout(() => {
             document.body.removeChild(notification);
-            document.head.removeChild(style);
-        }, 300);
+            if (style) {
+                document.head.removeChild(style);
+            }
+        }, lowPower ? 180 : 300);
     }, 2000);
 }
 

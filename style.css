@@ -6,11 +6,11 @@
 }
 
 :root {
-    /* Color Palette - Inspired by Pixla */
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    /* Light-weight palette tuned for low-power devices */
+    --primary-gradient: linear-gradient(135deg, #4f7cea 0%, #5563c1 100%);
+    --secondary-gradient: linear-gradient(135deg, #ef9cf4 0%, #e45b7b 100%);
+    --success-gradient: linear-gradient(135deg, #47a7f8 0%, #38d3e4 100%);
+    --warning-gradient: linear-gradient(135deg, #f78aa0 0%, #f9d870 100%);
 
     --bg-dark: #0f0f1e;
     --bg-card: rgba(255, 255, 255, 0.05);
@@ -37,14 +37,14 @@
     --radius-lg: 30px;
 
     /* Shadows */
-    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 30px rgba(102, 126, 234, 0.3);
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.16);
+    --shadow-glow: 0 0 16px rgba(102, 126, 234, 0.25);
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: var(--bg-dark);
     color: var(--text-primary);
     min-height: 100vh;
@@ -62,7 +62,7 @@ body::before {
     height: 200%;
     background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.15) 0%, transparent 50%);
-    animation: backgroundMove 20s ease-in-out infinite;
+    animation: backgroundMove 18s ease-in-out infinite;
     z-index: -1;
 }
 
@@ -74,8 +74,39 @@ body::before {
     }
 
     50% {
-        transform: translate(-5%, -5%) rotate(5deg);
+        transform: translate(-3%, -3%) rotate(3deg);
     }
+}
+
+/* Low-power mode trims effects for old iPads */
+body.low-power {
+    background: #11131f;
+}
+
+body.low-power::before {
+    display: none;
+    animation: none;
+}
+
+body.low-power * {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.low-power .glass-card,
+body.low-power .feeding-button,
+body.low-power .member-button,
+body.low-power .walk-button,
+body.low-power .leaderboard-item {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.low-power .walk-button::before {
+    display: none;
 }
 
 /* ===== CONTAINER ===== */
