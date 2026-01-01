@@ -531,10 +531,12 @@ document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
 function updateFullscreenButton() {
     if (document.fullscreenElement || document.webkitFullscreenElement) {
         fullscreenButton.style.display = 'none';
-        document.body.style.background = 'var(--bg-dark)';
+        document.documentElement.style.background = '#0f0f1e';
+        document.body.style.background = '#0f0f1e';
     } else {
         fullscreenButton.style.display = 'block';
-        document.body.style.background = 'var(--bg-dark)';
+        document.documentElement.style.background = '#0f0f1e';
+        document.body.style.background = '#0f0f1e';
     }
 }
 
