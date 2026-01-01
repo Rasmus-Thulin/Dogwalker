@@ -138,7 +138,6 @@ body::before {
 
 .feeding-button:hover {
     background: var(--bg-card-hover);
-    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
@@ -193,7 +192,6 @@ body::before {
 
 .glass-card:hover {
     background: var(--bg-card-hover);
-    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
@@ -349,7 +347,6 @@ body::before {
 
 .member-button:hover {
     background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-3px);
     box-shadow: var(--shadow-md);
 }
 
@@ -385,23 +382,8 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    animation: pulseButton 3s ease-in-out infinite;
     position: relative;
     overflow: hidden;
-}
-
-@keyframes pulseButton {
-
-    0%,
-    100% {
-        box-shadow: var(--shadow-lg);
-        transform: scale(1);
-    }
-
-    50% {
-        box-shadow: 0 0 40px rgba(79, 172, 254, 0.5);
-        transform: scale(1.02);
-    }
 }
 
 .walk-button::before {
@@ -423,7 +405,6 @@ body::before {
 }
 
 .walk-button:hover {
-    transform: translateY(-5px);
     box-shadow: 0 20px 50px rgba(79, 172, 254, 0.4);
 }
 
@@ -515,7 +496,6 @@ body::before {
 
 .leaderboard-item:hover {
     background: rgba(255, 255, 255, 0.06);
-    transform: translateX(5px);
 }
 
 .leaderboard-item.rank-1 {
