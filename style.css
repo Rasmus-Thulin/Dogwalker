@@ -702,3 +702,24 @@ body.low-power .walk-button::before {
         font-size: 1.2rem;
     }
 }
+
+/* Tablet tuning (e.g., iPad) for breathing room */
+@media (min-width: 700px) and (max-width: 1100px) {
+    .container {
+        padding: var(--spacing-md);
+    }
+
+    .main-content {
+        gap: var(--spacing-lg);
+    }
+
+    .feeding-buttons {
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .glass-card,
+    .walk-button {
+        margin-top: var(--spacing-xs);
+    }
+}
