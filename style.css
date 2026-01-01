@@ -5,6 +5,10 @@
     box-sizing: border-box;
 }
 
+button {
+    touch-action: manipulation;
+}
+
 :root {
     /* Light-weight palette tuned for low-power devices */
     --primary-gradient: linear-gradient(135deg, #4f7cea 0%, #5563c1 100%);
@@ -141,6 +145,15 @@ body.low-power .walk-button::before {
     overflow: hidden;
     color: var(--text-primary);
     font-family: inherit;
+}
+
+.feeding-button:active {
+    transform: translateY(1px) scale(0.99);
+    filter: brightness(0.95);
+}
+
+.feeding-button.fed:active {
+    filter: brightness(0.9);
 }
 
 .feeding-button:hover {
@@ -349,6 +362,11 @@ body.low-power .walk-button::before {
     transition: all 0.3s ease;
 }
 
+.member-button:active {
+    transform: translateY(1px);
+    opacity: 0.9;
+}
+
 .member-button:hover {
     background: rgba(255, 255, 255, 0.08);
     transform: translateY(-3px);
@@ -372,8 +390,9 @@ body.low-power .walk-button::before {
 
 /* ===== WALK BUTTON ===== */
 .walk-button {
-    padding: var(--spacing-md) var(--spacing-lg);
-    font-size: 1.25rem;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    min-height: 80px;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
     background: var(--success-gradient);
@@ -429,7 +448,8 @@ body.low-power .walk-button::before {
 }
 
 .walk-button:active {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(0.99);
+    filter: brightness(0.95);
 }
 
 .button-icon {
@@ -458,6 +478,35 @@ body.low-power .walk-button::before {
 
     100% {
         transform: scale(1);
+    }
+}
+
+/* Shorter layout tuning for low view heights (e.g., older iPads) */
+@media (max-height: 900px) {
+    .main-content {
+        gap: var(--spacing-sm);
+    }
+
+    .feeding-buttons {
+        margin-bottom: var(--spacing-sm);
+        gap: var(--spacing-xs);
+    }
+
+    .timer-display {
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .time-value {
+        font-size: 2.6rem;
+    }
+
+    .walk-button {
+        padding: 1.1rem var(--spacing-lg);
+        min-height: 76px;
+    }
+
+    .footer {
+        margin-top: var(--spacing-sm);
     }
 }
 
