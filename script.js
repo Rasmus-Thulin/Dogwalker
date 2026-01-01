@@ -182,10 +182,9 @@ async function handleFeedingClick(mealTime) {
             '🌙 Rosie har fått kvällsmat!';
         showNotification(message);
     } else {
-        // Already fed - ask if they want to undo
-        try {
-            await showConfirmModal('Har hon inte fått mat?');
-
+        // Already fed - quick native confirm keeps it lightweight
+        const confirmReset = window.confirm('Har hon inte fått mat?');
+        if (confirmReset) {
             // Undo - remove fed status
             localStorage.removeItem(storageKey);
             localStorage.removeItem(storageKey + 'Time');
@@ -198,8 +197,6 @@ async function handleFeedingClick(mealTime) {
                 '↩️ Morgonmat återställd' :
                 '↩️ Kvällsmat återställd';
             showNotification(message);
-        } catch {
-            // User cancelled - do nothing
         }
     }
 }
@@ -511,106 +508,26 @@ function showNotification(message) {
 
 // ===== FOOTER RESET HANDLER =====
 async function handleFooterClick() {
-    try {
-        // First confirmation
-        await showConfirmModal('Vill du nollställa highscore?');
+    const ok1 = window.confirm('Vill du nollställa highscore?');
+    if (!ok1) return;
 
-        // Second confirmation
-        await showConfirmModal('Är du helt säker?');
+    const ok2 = window.confirm('Är du helt säker?');
+    if (!ok2) return;
 
-        // Third confirmation
-        await showConfirmModal('Fuska inte nu.');
+    const ok3 = window.confirm('Fuska inte nu.');
+    if (!ok3) return;
 
-        // All confirmations passed - reset highscore
-        localStorage.removeItem('walks');
-        localStorage.removeItem('nextResetTime');
+    // All confirmations passed - reset highscore
+    localStorage.removeItem('walks');
+    localStorage.removeItem('nextResetTime');
 
-        // Show notification
-        showNotification('🔄 Highscoren har nollställts!');
+    // Show notification
+    showNotification('🔄 Highscoren har nollställts!');
 
-        // Reload to update everything
-        setTimeout(() => {
-            location.reload();
-        }, 2500);
-    } catch {
-        // User cancelled - do nothing
-    }
-}
-
-// ===== CUSTOM MODAL =====
-function showConfirmModal(message) {
-    return new Promise((resolve, reject) => {
-        // Create modal overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-
-        // Create modal
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-
-        // Modal content
-        const modalContent = document.createElement('div');
-        modalContent.className = 'modal-content';
-
-        // Message
-        const messageEl = document.createElement('p');
-        messageEl.className = 'modal-message';
-        messageEl.textContent = message;
-
-        // Buttons container
-        const buttonsDiv = document.createElement('div');
-        buttonsDiv.className = 'modal-buttons';
-
-        // Confirm button - "Nej" means she hasn't been fed, so reset
-        const confirmBtn = document.createElement('button');
-        confirmBtn.className = 'modal-button modal-confirm';
-        confirmBtn.textContent = 'Nej';
-        confirmBtn.onclick = () => {
-            closeModal();
-            resolve();
-        };
-
-        // Cancel button - "Jo" means she HAS been fed, so cancel
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'modal-button modal-cancel';
-        cancelBtn.textContent = 'Jo';
-        cancelBtn.onclick = () => {
-            closeModal();
-            reject();
-        };
-
-        // Build modal
-        buttonsDiv.appendChild(cancelBtn);
-        buttonsDiv.appendChild(confirmBtn);
-        modalContent.appendChild(messageEl);
-        modalContent.appendChild(buttonsDiv);
-        modal.appendChild(modalContent);
-        overlay.appendChild(modal);
-
-        // Add to page
-        document.body.appendChild(overlay);
-
-        // Animate in
-        setTimeout(() => {
-            overlay.classList.add('show');
-        }, 10);
-
-        // Close function
-        function closeModal() {
-            overlay.classList.remove('show');
-            setTimeout(() => {
-                document.body.removeChild(overlay);
-            }, 300);
-        }
-
-        // Close on overlay click
-        overlay.onclick = (e) => {
-            if (e.target === overlay) {
-                closeModal();
-                reject();
-            }
-        };
-    });
+    // Reload to update everything
+    setTimeout(() => {
+        location.reload();
+    }, 1500);
 }
 
 // ===== START APP =====
