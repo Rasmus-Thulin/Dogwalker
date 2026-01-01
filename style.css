@@ -569,6 +569,27 @@ body::before {
     padding-top: var(--spacing-sm);
     color: var(--text-muted);
     font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.fullscreen-button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    margin: 0 auto;
+}
+
+.fullscreen-button:active {
+    transform: translateY(1px);
+    filter: brightness(0.9);
 }
 
 .footer p {

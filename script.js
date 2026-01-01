@@ -16,6 +16,7 @@ const morningFeedButton = document.getElementById('morningFeedButton');
 const eveningFeedButton = document.getElementById('eveningFeedButton');
 const morningStatus = document.getElementById('morningStatus');
 const eveningStatus = document.getElementById('eveningStatus');
+const fullscreenButton = document.getElementById('fullscreenButton');
 
 // ===== STATE =====
 let countdownInterval = null;
@@ -37,6 +38,7 @@ function init() {
     footerText.addEventListener('click', handleFooterClick);
     morningFeedButton.addEventListener('click', () => handleFeedingClick('morning'));
     eveningFeedButton.addEventListener('click', () => handleFeedingClick('evening'));
+    fullscreenButton.addEventListener('click', toggleFullscreen);
 
     // Start countdown
     startCountdown();
@@ -499,6 +501,41 @@ async function handleFooterClick() {
     setTimeout(() => {
         location.reload();
     }, 1500);
+}
+
+// ===== FULLSCREEN =====
+function toggleFullscreen() {
+    const elem = document.documentElement;
+    
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        // Enter fullscreen
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        }
+        fullscreenButton.textContent = '❌ Stäng fullskärm';
+    } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+        fullscreenButton.textContent = '📱 Fullskärm';
+    }
+}
+
+// Listen for fullscreen changes
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+
+function updateFullscreenButton() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        fullscreenButton.textContent = '❌ Stäng fullskärm';
+    } else {
+        fullscreenButton.textContent = '📱 Fullskärm';
+    }
 }
 
 // ===== START APP =====
