@@ -49,11 +49,16 @@ button {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg-dark);
+    background: var(--bg-dark) !important;
     color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
+}
+
+body:fullscreen,
+body:-webkit-full-screen {
+    background: var(--bg-dark) !important;
 }
 
 /* Animated Background */

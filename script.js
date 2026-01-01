@@ -514,7 +514,6 @@ function toggleFullscreen() {
         } else if (elem.webkitRequestFullscreen) {
             elem.webkitRequestFullscreen();
         }
-        fullscreenButton.textContent = '❌ Stäng fullskärm';
     } else {
         // Exit fullscreen
         if (document.exitFullscreen) {
@@ -522,7 +521,6 @@ function toggleFullscreen() {
         } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
         }
-        fullscreenButton.textContent = '📱 Fullskärm';
     }
 }
 
@@ -532,9 +530,11 @@ document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
 
 function updateFullscreenButton() {
     if (document.fullscreenElement || document.webkitFullscreenElement) {
-        fullscreenButton.textContent = '❌ Stäng fullskärm';
+        fullscreenButton.style.display = 'none';
+        document.body.style.background = 'var(--bg-dark)';
     } else {
-        fullscreenButton.textContent = '📱 Fullskärm';
+        fullscreenButton.style.display = 'block';
+        document.body.style.background = 'var(--bg-dark)';
     }
 }
 
