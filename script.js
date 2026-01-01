@@ -182,22 +182,22 @@ async function handleFeedingClick(mealTime) {
             '🌙 Rosie har fått kvällsmat!';
         showNotification(message);
     } else {
-        // Already fed - quick native confirm keeps it lightweight
-        const confirmReset = window.confirm('Har hon inte fått mat?');
-        if (confirmReset) {
-            // Undo - remove fed status
-            localStorage.removeItem(storageKey);
-            localStorage.removeItem(storageKey + 'Time');
+        // Already fed - lightweight custom confirm
+        const confirmReset = await showConfirmModal('Har hon inte fått mat?');
+        if (!confirmReset) return;
 
-            // Update UI
-            updateFeedingStatus();
+        // Undo - remove fed status
+        localStorage.removeItem(storageKey);
+        localStorage.removeItem(storageKey + 'Time');
 
-            // Show notification
-            const message = mealTime === 'morning' ?
-                '↩️ Morgonmat återställd' :
-                '↩️ Kvällsmat återställd';
-            showNotification(message);
-        }
+        // Update UI
+        updateFeedingStatus();
+
+        // Show notification
+        const message = mealTime === 'morning' ?
+            '↩️ Morgonmat återställd' :
+            '↩️ Kvällsmat återställd';
+        showNotification(message);
     }
 }
 
@@ -508,13 +508,13 @@ function showNotification(message) {
 
 // ===== FOOTER RESET HANDLER =====
 async function handleFooterClick() {
-    const ok1 = window.confirm('Vill du nollställa highscore?');
+    const ok1 = await showConfirmModal('Vill du nollställa highscore?');
     if (!ok1) return;
 
-    const ok2 = window.confirm('Är du helt säker?');
+    const ok2 = await showConfirmModal('Är du helt säker?');
     if (!ok2) return;
 
-    const ok3 = window.confirm('Fuska inte nu.');
+    const ok3 = await showConfirmModal('Fuska inte nu.');
     if (!ok3) return;
 
     // All confirmations passed - reset highscore
@@ -528,6 +528,52 @@ async function handleFooterClick() {
     setTimeout(() => {
         location.reload();
     }, 1500);
+}
+
+// ===== CUSTOM CONFIRM MODAL (lightweight) =====
+function showConfirmModal(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+
+        const modal = document.createElement('div');
+        modal.className = 'modal modal-simple';
+
+        const text = document.createElement('p');
+        text.className = 'modal-message';
+        text.textContent = message;
+
+        const buttons = document.createElement('div');
+        buttons.className = 'modal-buttons';
+
+        const cancel = document.createElement('button');
+        cancel.className = 'modal-button modal-cancel';
+        cancel.textContent = 'Avbryt';
+        cancel.onclick = () => close(false);
+
+        const confirm = document.createElement('button');
+        confirm.className = 'modal-button modal-confirm';
+        confirm.textContent = 'OK';
+        confirm.onclick = () => close(true);
+
+        buttons.appendChild(cancel);
+        buttons.appendChild(confirm);
+        modal.appendChild(text);
+        modal.appendChild(buttons);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        function close(val) {
+            document.body.removeChild(overlay);
+            resolve(val);
+        }
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                close(false);
+            }
+        });
+    });
 }
 
 // ===== START APP =====
