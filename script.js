@@ -17,29 +17,12 @@ const eveningFeedButton = document.getElementById('eveningFeedButton');
 const morningStatus = document.getElementById('morningStatus');
 const eveningStatus = document.getElementById('eveningStatus');
 
-// ===== PERFORMANCE DETECTION =====
-function isLowPowerDevice() {
-    const ua = navigator.userAgent || '';
-    const isIPad = /iPad/.test(ua);
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    return isIPad || prefersReducedMotion;
-}
-
-function applyLowPowerMode() {
-    // Trim heavy visuals on older hardware like iPad Air (MD788KS/A)
-    document.body.classList.add('low-power');
-}
-
 // ===== STATE =====
 let countdownInterval = null;
 let nextWalkTime = null;
 
 // ===== INITIALIZATION =====
 function init() {
-    if (isLowPowerDevice()) {
-        applyLowPowerMode();
-    }
-
     // Check and handle weekly reset
     checkWeeklyReset();
 
@@ -182,8 +165,7 @@ async function handleFeedingClick(mealTime) {
             '🌙 Rosie har fått kvällsmat!';
         showNotification(message);
     } else {
-        // Already fed - lightweight custom confirm
-        const confirmReset = await showConfirmModal('Har hon inte fått mat?');
+        const confirmReset = window.confirm('Har hon inte fått mat?');
         if (!confirmReset) return;
 
         // Undo - remove fed status
@@ -450,8 +432,6 @@ function getTimeAgo(timestamp) {
 
 // ===== NOTIFICATION =====
 function showNotification(message) {
-    const lowPower = document.body.classList.contains('low-power');
-
     // Create notification element
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -459,62 +439,53 @@ function showNotification(message) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0.95);
-        background: ${lowPower ? '#1f2530' : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'};
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         color: white;
-        padding: ${lowPower ? '1rem 1.25rem' : '2rem 3rem'};
+        padding: 1.5rem 2.5rem;
         border-radius: 16px;
-        font-size: ${lowPower ? '1.1rem' : '1.5rem'};
+        font-size: 1.3rem;
         font-weight: 700;
-        box-shadow: ${lowPower ? 'none' : '0 20px 60px rgba(79, 172, 254, 0.4)'};
+        box-shadow: 0 20px 60px rgba(79, 172, 254, 0.4);
         z-index: 1000;
-        ${lowPower ? '' : 'animation: notificationPop 0.5s ease-out forwards;'}
+        animation: notificationPop 0.45s ease-out forwards;
     `;
     notification.textContent = message;
 
     // Add animation
-    let style;
-    if (!lowPower) {
-        style = document.createElement('style');
-        style.textContent = `
-            @keyframes notificationPop {
-                0% { transform: translate(-50%, -50%) scale(0); }
-                50% { transform: translate(-50%, -50%) scale(1.1); }
-                100% { transform: translate(-50%, -50%) scale(1); }
-            }
-            @keyframes notificationFade {
-                to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes notificationPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(0.95); }
+        }
+        @keyframes notificationFade {
+            to { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+        }
+    `;
+    document.head.appendChild(style);
 
     document.body.appendChild(notification);
 
     // Remove after 2 seconds
     setTimeout(() => {
-        if (!lowPower) {
-            notification.style.animation = 'notificationFade 0.25s ease-out forwards';
-        } else {
-            notification.style.opacity = '0';
-        }
+        notification.style.animation = 'notificationFade 0.25s ease-out forwards';
         setTimeout(() => {
             document.body.removeChild(notification);
-            if (style) {
-                document.head.removeChild(style);
-            }
-        }, lowPower ? 180 : 300);
+            document.head.removeChild(style);
+        }, 300);
     }, 2000);
 }
 
 // ===== FOOTER RESET HANDLER =====
 async function handleFooterClick() {
-    const ok1 = await showConfirmModal('Vill du nollställa highscore?');
+    const ok1 = window.confirm('Vill du nollställa highscore?');
     if (!ok1) return;
 
-    const ok2 = await showConfirmModal('Är du helt säker?');
+    const ok2 = window.confirm('Är du helt säker?');
     if (!ok2) return;
 
-    const ok3 = await showConfirmModal('Fuska inte nu.');
+    const ok3 = window.confirm('Fuska inte nu.');
     if (!ok3) return;
 
     // All confirmations passed - reset highscore
@@ -528,52 +499,6 @@ async function handleFooterClick() {
     setTimeout(() => {
         location.reload();
     }, 1500);
-}
-
-// ===== CUSTOM CONFIRM MODAL (lightweight) =====
-function showConfirmModal(message) {
-    return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-
-        const modal = document.createElement('div');
-        modal.className = 'modal modal-simple';
-
-        const text = document.createElement('p');
-        text.className = 'modal-message';
-        text.textContent = message;
-
-        const buttons = document.createElement('div');
-        buttons.className = 'modal-buttons';
-
-        const cancel = document.createElement('button');
-        cancel.className = 'modal-button modal-cancel';
-        cancel.textContent = 'Avbryt';
-        cancel.onclick = () => close(false);
-
-        const confirm = document.createElement('button');
-        confirm.className = 'modal-button modal-confirm';
-        confirm.textContent = 'OK';
-        confirm.onclick = () => close(true);
-
-        buttons.appendChild(cancel);
-        buttons.appendChild(confirm);
-        modal.appendChild(text);
-        modal.appendChild(buttons);
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-
-        function close(val) {
-            document.body.removeChild(overlay);
-            resolve(val);
-        }
-
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                close(false);
-            }
-        });
-    });
 }
 
 // ===== START APP =====
