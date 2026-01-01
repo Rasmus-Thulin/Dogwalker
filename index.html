@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Håll koll på när det är dags att gå ut med Rosie">
+    <title>Rosie's Promenad Timer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Main Timer Display -->
+        <main class="main-content">
+            <!-- Feeding Buttons -->
+            <div class="feeding-buttons">
+                <button class="feeding-button" id="morningFeedButton">
+                    <span class="feeding-icon">🌅</span>
+                    <span class="feeding-label">Mat morgon</span>
+                    <span class="feeding-time">ca 08:00</span>
+                    <span class="feeding-status" id="morningStatus">Ej given</span>
+                </button>
+                <button class="feeding-button" id="eveningFeedButton">
+                    <span class="feeding-icon">🌙</span>
+                    <span class="feeding-label">Mat kväll</span>
+                    <span class="feeding-time">ca 18:00</span>
+                    <span class="feeding-status" id="eveningStatus">Ej given</span>
+                </button>
+            </div>
+
+            <div class="timer-card glass-card">
+                <div class="timer-label">Nästa promenad om</div>
+                <div class="timer-display" id="timerDisplay">
+                    <span class="time-segment">
+                        <span class="time-value" id="hours">00</span>
+                        <span class="time-unit">h</span>
+                    </span>
+                    <span class="time-separator">:</span>
+                    <span class="time-segment">
+                        <span class="time-value" id="minutes">00</span>
+                        <span class="time-unit">m</span>
+                    </span>
+                    <span class="time-separator">:</span>
+                    <span class="time-segment">
+                        <span class="time-value" id="seconds">00</span>
+                        <span class="time-unit">s</span>
+                    </span>
+                </div>
+                <div class="timer-status" id="timerStatus"></div>
+            </div>
+
+            <!-- Family Member Selector -->
+            <div class="family-selector glass-card">
+                <h2 class="section-title">Vem går ut?</h2>
+                <div class="family-members">
+                    <label class="family-member">
+                        <input type="radio" name="walker" value="Rasmus" id="walker-rasmus" checked>
+                        <span class="member-button">
+                            <span class="member-icon">👨</span>
+                            <span class="member-name">Rasmus</span>
+                        </span>
+                    </label>
+                    <label class="family-member">
+                        <input type="radio" name="walker" value="Maria" id="walker-maria">
+                        <span class="member-button">
+                            <span class="member-icon">👩</span>
+                            <span class="member-name">Maria</span>
+                        </span>
+                    </label>
+                    <label class="family-member">
+                        <input type="radio" name="walker" value="Melwin" id="walker-melwin">
+                        <span class="member-button">
+                            <span class="member-icon">👦</span>
+                            <span class="member-name">Melwin</span>
+                        </span>
+                    </label>
+                    <label class="family-member">
+                        <input type="radio" name="walker" value="Elliot" id="walker-elliot">
+                        <span class="member-button">
+                            <span class="member-icon">🧒</span>
+                            <span class="member-name">Elliot</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Main Action Button -->
+            <button class="walk-button" id="walkButton">
+                <span class="button-icon">🐾</span>
+                <span class="button-text">Gått ut med hunden!</span>
+            </button>
+
+            <!-- Leaderboard -->
+            <div class="leaderboard glass-card">
+                <h2 class="section-title">🏆 Highscore</h2>
+                <div class="leaderboard-list" id="leaderboardList">
+                    <!-- Populated by JavaScript -->
+                </div>
+                <div class="last-walk" id="lastWalk"></div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p id="footerText">Gjord med ❤️ för Rosie</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
