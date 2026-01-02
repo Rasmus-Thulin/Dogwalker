@@ -16,7 +16,6 @@ const morningFeedButton = document.getElementById('morningFeedButton');
 const eveningFeedButton = document.getElementById('eveningFeedButton');
 const morningStatus = document.getElementById('morningStatus');
 const eveningStatus = document.getElementById('eveningStatus');
-const fullscreenButton = document.getElementById('fullscreenButton');
 
 // ===== STATE =====
 let countdownInterval = null;
@@ -38,7 +37,6 @@ function init() {
     footerText.addEventListener('click', handleFooterClick);
     morningFeedButton.addEventListener('click', () => handleFeedingClick('morning'));
     eveningFeedButton.addEventListener('click', () => handleFeedingClick('evening'));
-    fullscreenButton.addEventListener('click', toggleFullscreen);
 
     // Start countdown
     startCountdown();
@@ -167,7 +165,7 @@ async function handleFeedingClick(mealTime) {
             '🌙 Rosie har fått kvällsmat!';
         showNotification(message);
     } else {
-        const confirmReset = window.confirm('Har hon inte fått mat?');
+        const confirmReset = await showConfirmModal('Har hon inte fått mat?');
         if (!confirmReset) return;
 
         // Undo - remove fed status
@@ -481,13 +479,13 @@ function showNotification(message) {
 
 // ===== FOOTER RESET HANDLER =====
 async function handleFooterClick() {
-    const ok1 = window.confirm('Vill du nollställa highscore?');
+    const ok1 = await showConfirmModal('Vill du nollställa highscore?');
     if (!ok1) return;
 
-    const ok2 = window.confirm('Är du helt säker?');
+    const ok2 = await showConfirmModal('Är du helt säker?');
     if (!ok2) return;
 
-    const ok3 = window.confirm('Fuska inte nu.');
+    const ok3 = await showConfirmModal('Fuska inte nu.');
     if (!ok3) return;
 
     // All confirmations passed - reset highscore
@@ -503,41 +501,58 @@ async function handleFooterClick() {
     }, 1500);
 }
 
-// ===== FULLSCREEN =====
-function toggleFullscreen() {
-    const elem = document.documentElement;
-    
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        // Enter fullscreen
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) {
-            elem.webkitRequestFullscreen();
-        }
-    } else {
-        // Exit fullscreen
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        }
-    }
-}
+// ===== CUSTOM CONFIRM MODAL =====
+function showConfirmModal(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
 
-// Listen for fullscreen changes
-document.addEventListener('fullscreenchange', updateFullscreenButton);
-document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+        const modal = document.createElement('div');
+        modal.className = 'modal modal-simple';
 
-function updateFullscreenButton() {
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
-        fullscreenButton.style.display = 'none';
-        document.documentElement.style.background = '#0f0f1e';
-        document.body.style.background = '#0f0f1e';
-    } else {
-        fullscreenButton.style.display = 'block';
-        document.documentElement.style.background = '#0f0f1e';
-        document.body.style.background = '#0f0f1e';
-    }
+        const text = document.createElement('p');
+        text.className = 'modal-message';
+        text.textContent = message;
+
+        const buttons = document.createElement('div');
+        buttons.className = 'modal-buttons';
+
+        const cancel = document.createElement('button');
+        cancel.className = 'modal-button modal-cancel';
+        cancel.textContent = 'Avbryt';
+        cancel.onclick = () => close(false);
+
+        const confirm = document.createElement('button');
+        confirm.className = 'modal-button modal-confirm';
+        confirm.textContent = 'OK';
+        confirm.onclick = () => close(true);
+
+        buttons.appendChild(cancel);
+        buttons.appendChild(confirm);
+        modal.appendChild(text);
+        modal.appendChild(buttons);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        // Animate in
+        setTimeout(() => {
+            overlay.classList.add('show');
+        }, 10);
+
+        function close(val) {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                resolve(val);
+            }, 300);
+        }
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                close(false);
+            }
+        });
+    });
 }
 
 // ===== START APP =====

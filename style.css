@@ -138,6 +138,7 @@ body::before {
 
 .feeding-button:hover {
     background: var(--bg-card-hover);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
@@ -192,6 +193,7 @@ body::before {
 
 .glass-card:hover {
     background: var(--bg-card-hover);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
@@ -347,6 +349,7 @@ body::before {
 
 .member-button:hover {
     background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-md);
 }
 
@@ -382,8 +385,20 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
+    animation: pulseButton 3s ease-in-out infinite;
     position: relative;
     overflow: hidden;
+}
+
+@keyframes pulseButton {
+    0%, 100% {
+        box-shadow: var(--shadow-lg);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(79, 172, 254, 0.5);
+        transform: scale(1.02);
+    }
 }
 
 .walk-button::before {
@@ -405,6 +420,7 @@ body::before {
 }
 
 .walk-button:hover {
+    transform: translateY(-5px);
     box-shadow: 0 20px 50px rgba(79, 172, 254, 0.4);
 }
 
@@ -496,6 +512,7 @@ body::before {
 
 .leaderboard-item:hover {
     background: rgba(255, 255, 255, 0.06);
+    transform: translateX(5px);
 }
 
 .leaderboard-item.rank-1 {
@@ -560,27 +577,6 @@ body::before {
     padding-top: var(--spacing-sm);
     color: var(--text-muted);
     font-size: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.fullscreen-button {
-    padding: var(--spacing-xs) var(--spacing-md);
-    font-size: 0.85rem;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-family: inherit;
-    margin: 0 auto;
-}
-
-.fullscreen-button:active {
-    transform: translateY(1px);
-    filter: brightness(0.9);
 }
 
 .footer p {
@@ -603,6 +599,101 @@ body::before {
 .modal-cancel,
 .modal-confirm {
     display: none;
+}
+
+/* ===== CUSTOM MODAL ===== */
+.modal-overlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+}
+
+.modal.modal-simple {
+    display: flex;
+    flex-direction: column;
+    background: rgba(26, 29, 41, 0.98);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xl);
+    width: 88%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal.modal-simple {
+    transform: scale(1);
+}
+
+.modal-message {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin-bottom: var(--spacing-lg);
+}
+
+.modal-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.modal-button {
+    display: block;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 1.05rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.modal-cancel {
+    display: block;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+}
+
+.modal-cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+.modal-confirm {
+    display: block;
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.modal-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+.modal-button:active {
+    transform: translateY(1px);
+    filter: brightness(0.95);
 }
 
 /* ===== RESPONSIVE ===== */
