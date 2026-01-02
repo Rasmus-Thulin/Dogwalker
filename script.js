@@ -21,6 +21,9 @@ const fullscreenLink = document.getElementById('fullscreenLink');
 // ===== STATE =====
 let countdownInterval = null;
 let nextWalkTime = null;
+let editMode = false;
+let touchStartY = 0;
+let touchStartValue = 0;
 
 // ===== INITIALIZATION =====
 function init() {
@@ -39,6 +42,20 @@ function init() {
     morningFeedButton.addEventListener('click', () => handleFeedingClick('morning'));
     eveningFeedButton.addEventListener('click', () => handleFeedingClick('evening'));
     fullscreenLink.addEventListener('click', toggleFullscreen);
+    timerDisplay.addEventListener('click', toggleEditMode);
+
+    // Touch events for time adjustment
+    hoursElement.addEventListener('touchstart', (e) => handleTouchStart(e, 'hours'));
+    hoursElement.addEventListener('touchmove', handleTouchMove);
+    hoursElement.addEventListener('touchend', handleTouchEnd);
+    
+    minutesElement.addEventListener('touchstart', (e) => handleTouchStart(e, 'minutes'));
+    minutesElement.addEventListener('touchmove', handleTouchMove);
+    minutesElement.addEventListener('touchend', handleTouchEnd);
+    
+    secondsElement.addEventListener('touchstart', (e) => handleTouchStart(e, 'seconds'));
+    secondsElement.addEventListener('touchmove', handleTouchMove);
+    secondsElement.addEventListener('touchend', handleTouchEnd);
 
     // Start countdown
     startCountdown();
@@ -479,7 +496,89 @@ function showNotification(message) {
     }, 2000);
 }
 
-// ===== FOOTER RESET HANDLER =====
+// ===== TIMER EDIT MODE =====
+function toggleEditMode() {
+    editMode = !editMode;
+    
+    if (editMode) {
+        timerDisplay.classList.add('edit-mode');
+        timerStatus.textContent = '👆 Dra på siffrorna för att justera';
+        timerStatus.classList.add('edit-hint');
+        // Pause countdown
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+    } else {
+        timerDisplay.classList.remove('edit-mode');
+        timerStatus.classList.remove('edit-hint');
+        // Restart countdown
+        startCountdown();
+        showNotification('⏰ Tiden justerad!');
+    }
+}
+
+let currentEditSegment = null;
+
+function handleTouchStart(e, segment) {
+    if (!editMode) return;
+    
+    e.preventDefault();
+    currentEditSegment = segment;
+    touchStartY = e.touches[0].clientY;
+    
+    const element = segment === 'hours' ? hoursElement : 
+                   segment === 'minutes' ? minutesElement : secondsElement;
+    touchStartValue = parseInt(element.textContent);
+    
+    element.classList.add('dragging');
+}
+
+function handleTouchMove(e) {
+    if (!editMode || !currentEditSegment) return;
+    
+    e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    const deltaY = touchStartY - touchY; // Reversed: drag up = increase
+    const steps = Math.floor(deltaY / 20); // 20px per step
+    
+    let newValue = touchStartValue + steps;
+    
+    // Apply constraints
+    if (currentEditSegment === 'hours') {
+        newValue = Math.max(0, Math.min(23, newValue));
+        hoursElement.textContent = newValue.toString().padStart(2, '0');
+    } else if (currentEditSegment === 'minutes') {
+        newValue = Math.max(0, Math.min(59, newValue));
+        minutesElement.textContent = newValue.toString().padStart(2, '0');
+    } else if (currentEditSegment === 'seconds') {
+        newValue = Math.max(0, Math.min(59, newValue));
+        secondsElement.textContent = newValue.toString().padStart(2, '0');
+    }
+    
+    updateNextWalkTime();
+}
+
+function handleTouchEnd(e) {
+    if (!editMode || !currentEditSegment) return;
+    
+    const element = currentEditSegment === 'hours' ? hoursElement : 
+                   currentEditSegment === 'minutes' ? minutesElement : secondsElement;
+    element.classList.remove('dragging');
+    
+    currentEditSegment = null;
+}
+
+function updateNextWalkTime() {
+    const hours = parseInt(hoursElement.textContent);
+    const minutes = parseInt(minutesElement.textContent);
+    const seconds = parseInt(secondsElement.textContent);
+    
+    const totalMs = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+    nextWalkTime = Date.now() + totalMs;
+    localStorage.setItem('nextWalkTime', nextWalkTime.toString());
+}
+
+// ===== FOOTER RESET HANDLER =======
 async function handleFooterClick() {
     const ok1 = await showConfirmModal('Vill du nollställa highscore?');
     if (!ok1) return;

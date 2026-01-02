@@ -249,6 +249,33 @@ body::before {
     align-items: center;
     gap: var(--spacing-xs);
     margin-bottom: var(--spacing-sm);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+}
+
+.timer-display:hover {
+    transform: scale(1.02);
+}
+
+.timer-display.edit-mode {
+    background: rgba(79, 172, 254, 0.1);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    border: 2px dashed var(--accent-blue);
+}
+
+.timer-display.edit-mode .time-value {
+    cursor: ns-resize;
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.timer-display.edit-mode .time-value:active,
+.timer-display.edit-mode .time-value.dragging {
+    background: rgba(79, 172, 254, 0.2);
+    transform: scale(1.1);
 }
 
 .time-segment {
@@ -284,6 +311,11 @@ body::before {
     font-size: 0.85rem;
     color: var(--text-secondary);
     min-height: 1.2rem;
+}
+
+.timer-status.edit-hint {
+    color: var(--accent-blue);
+    font-weight: 600;
 }
 
 .timer-status.warning {
