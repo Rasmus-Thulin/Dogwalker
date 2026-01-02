@@ -16,6 +16,7 @@ const morningFeedButton = document.getElementById('morningFeedButton');
 const eveningFeedButton = document.getElementById('eveningFeedButton');
 const morningStatus = document.getElementById('morningStatus');
 const eveningStatus = document.getElementById('eveningStatus');
+const fullscreenLink = document.getElementById('fullscreenLink');
 
 // ===== STATE =====
 let countdownInterval = null;
@@ -37,6 +38,7 @@ function init() {
     footerText.addEventListener('click', handleFooterClick);
     morningFeedButton.addEventListener('click', () => handleFeedingClick('morning'));
     eveningFeedButton.addEventListener('click', () => handleFeedingClick('evening'));
+    fullscreenLink.addEventListener('click', toggleFullscreen);
 
     // Start countdown
     startCountdown();
@@ -553,6 +555,39 @@ function showConfirmModal(message) {
             }
         });
     });
+}
+
+// ===== FULLSCREEN =====
+function toggleFullscreen() {
+    const elem = document.documentElement;
+    
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        // Enter fullscreen
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        }
+    } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+}
+
+// Listen for fullscreen changes
+document.addEventListener('fullscreenchange', updateFullscreenText);
+document.addEventListener('webkitfullscreenchange', updateFullscreenText);
+
+function updateFullscreenText() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        fullscreenLink.textContent = '❌ Stäng fullskärm';
+    } else {
+        fullscreenLink.textContent = '📱 Fullskärm';
+    }
 }
 
 // ===== START APP =====

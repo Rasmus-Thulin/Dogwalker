@@ -577,16 +577,31 @@ body::before {
     padding-top: var(--spacing-sm);
     color: var(--text-muted);
     font-size: 0.75rem;
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .footer p {
     cursor: pointer;
     transition: color 0.3s ease;
     user-select: none;
+    margin: 0;
 }
 
 .footer p:hover {
     color: var(--text-secondary);
+}
+
+.fullscreen-link {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.fullscreen-link:hover {
+    color: var(--text-primary);
 }
 
 /* ===== CUSTOM MODAL ===== */
