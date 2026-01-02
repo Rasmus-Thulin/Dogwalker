@@ -19,6 +19,7 @@ button {
     --secondary-gradient: linear-gradient(135deg, #ef9cf4 0%, #e45b7b 100%);
     --success-gradient: linear-gradient(135deg, #47a7f8 0%, #38d3e4 100%);
     --warning-gradient: linear-gradient(135deg, #f78aa0 0%, #f9d870 100%);
+    --weather-gradient: linear-gradient(135deg, #4f7cea 0%, #5563c1 100%);
 
     --bg-dark: #0f0f1e;
     --bg-card: rgba(255, 255, 255, 0.05);
@@ -232,6 +233,35 @@ body::before {
 /* ===== TIMER CARD ===== */
 .timer-card {
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+}
+
+.timer-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: var(--weather-gradient);
+    border-radius: inherit;
+    z-index: -2;
+    transition: background 0.6s ease;
+}
+
+.timer-card::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(160deg, rgba(15, 15, 30, 0.75), rgba(15, 15, 30, 0.5));
+    z-index: -1;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: inherit;
+}
+
+.timer-card > * {
+    position: relative;
+    z-index: 1;
 }
 
 .timer-label {
@@ -322,6 +352,21 @@ body::before {
     color: var(--accent-pink);
     font-weight: 600;
     animation: pulse 2s ease-in-out infinite;
+}
+
+.weather-badge {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    padding: 0.4rem 0.75rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
 }
 
 @keyframes pulse {

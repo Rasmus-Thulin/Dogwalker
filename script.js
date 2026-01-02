@@ -1,6 +1,8 @@
 // ===== CONSTANTS =====
 const WALK_INTERVAL = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
 const FAMILY_MEMBERS = ['Rasmus', 'Maria', 'Melwin', 'Elliot'];
+const DEFAULT_LOCATION = { latitude: 59.3293, longitude: 18.0686, label: 'Stockholm' };
+const WEATHER_REFRESH_MS = 30 * 60 * 1000;
 
 // ===== DOM ELEMENTS =====
 const timerDisplay = document.getElementById('timerDisplay');
@@ -17,6 +19,7 @@ const eveningFeedButton = document.getElementById('eveningFeedButton');
 const morningStatus = document.getElementById('morningStatus');
 const eveningStatus = document.getElementById('eveningStatus');
 const fullscreenLink = document.getElementById('fullscreenLink');
+const weatherBadge = document.getElementById('weatherBadge');
 
 // ===== STATE =====
 let countdownInterval = null;
@@ -24,6 +27,7 @@ let nextWalkTime = null;
 let editMode = false;
 let touchStartY = 0;
 let touchStartValue = 0;
+let weatherInterval = null;
 
 // ===== INITIALIZATION =====
 function init() {
@@ -68,6 +72,91 @@ function init() {
 
     // Update feeding status
     updateFeedingStatus();
+
+    // Weather background
+    initWeather();
+}
+
+// ===== WEATHER =====
+async function initWeather() {
+    try {
+        const coords = await getCoordinates();
+        await fetchWeather(coords);
+
+        // Refresh periodically to keep background relevant
+        if (!weatherInterval) {
+            weatherInterval = setInterval(() => {
+                fetchWeather(coords).catch(() => {
+                    weatherBadge.textContent = 'Ingen väderdata just nu';
+                    applyWeatherBackground(null);
+                });
+            }, WEATHER_REFRESH_MS);
+        }
+    } catch (err) {
+        weatherBadge.textContent = 'Ingen väderdata just nu';
+        applyWeatherBackground(null);
+    }
+}
+
+function getCoordinates() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve(DEFAULT_LOCATION);
+            return;
+        }
+
+        const opts = { enableHighAccuracy: false, timeout: 4000, maximumAge: 10 * 60 * 1000 };
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                resolve({
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude,
+                    label: 'Din plats'
+                });
+            },
+            () => resolve(DEFAULT_LOCATION),
+            opts
+        );
+    });
+}
+
+async function fetchWeather({ latitude, longitude, label }) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('weather fetch failed');
+
+    const data = await res.json();
+    const current = data.current_weather;
+    if (!current) throw new Error('no weather payload');
+
+    const mapped = mapWeatherCode(current.weathercode);
+    const temp = Math.round(current.temperature);
+    const locationLabel = label || 'Vald plats';
+
+    weatherBadge.textContent = `${mapped.emoji} ${mapped.label} ${temp}°C · ${locationLabel}`;
+    applyWeatherBackground(mapped.gradient);
+}
+
+function mapWeatherCode(code) {
+    const palette = [
+        { codes: [0], label: 'Klart', emoji: '☀️', gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)' },
+        { codes: [1, 2], label: 'Lätt molnigt', emoji: '🌤️', gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)' },
+        { codes: [3], label: 'Mulet', emoji: '☁️', gradient: 'linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%)' },
+        { codes: [45, 48], label: 'Dimma', emoji: '🌫️', gradient: 'linear-gradient(135deg, #757f9a 0%, #d7dde8 100%)' },
+        { codes: [51, 53, 55, 56, 57], label: 'Duggregn', emoji: '🌦️', gradient: 'linear-gradient(135deg, #7f7fd5 0%, #86a8e7 50%, #91eae4 100%)' },
+        { codes: [61, 63, 65, 66, 67], label: 'Regn', emoji: '🌧️', gradient: 'linear-gradient(135deg, #373b44 0%, #4286f4 100%)' },
+        { codes: [71, 73, 75, 77], label: 'Snö', emoji: '❄️', gradient: 'linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)' },
+        { codes: [80, 81, 82], label: 'Skurar', emoji: '⛈️', gradient: 'linear-gradient(135deg, #4b79a1 0%, #283e51 100%)' },
+        { codes: [95, 96, 99], label: 'Åska', emoji: '🌩️', gradient: 'linear-gradient(135deg, #232526 0%, #414345 100%)' },
+    ];
+
+    return palette.find(p => p.codes.includes(code)) || { label: 'Väder okänt', emoji: '❔', gradient: 'linear-gradient(135deg, #4f7cea 0%, #5563c1 100%)' };
+}
+
+function applyWeatherBackground(gradient) {
+    const fallback = 'linear-gradient(135deg, #4f7cea 0%, #5563c1 100%)';
+    document.documentElement.style.setProperty('--weather-gradient', gradient || fallback);
 }
 
 // ===== LOCAL STORAGE FUNCTIONS =====
