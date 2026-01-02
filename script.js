@@ -561,12 +561,19 @@ function showConfirmModal(message) {
 function toggleFullscreen() {
     const elem = document.documentElement;
     
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+        !document.mozFullScreenElement && !document.msFullscreenElement) {
         // Enter fullscreen
         if (elem.requestFullscreen) {
-            elem.requestFullscreen();
+            elem.requestFullscreen().catch(err => console.log('Fullscreen error:', err));
         } else if (elem.webkitRequestFullscreen) {
             elem.webkitRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+            elem.mozRequestFullScreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        } else {
+            showNotification('Fullskärm stöds ej i denna webbläsare');
         }
     } else {
         // Exit fullscreen
@@ -574,6 +581,10 @@ function toggleFullscreen() {
             document.exitFullscreen();
         } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
         }
     }
 }
@@ -581,12 +592,19 @@ function toggleFullscreen() {
 // Listen for fullscreen changes
 document.addEventListener('fullscreenchange', updateFullscreenText);
 document.addEventListener('webkitfullscreenchange', updateFullscreenText);
+document.addEventListener('mozfullscreenchange', updateFullscreenText);
+document.addEventListener('MSFullscreenChange', updateFullscreenText);
 
 function updateFullscreenText() {
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (document.fullscreenElement || document.webkitFullscreenElement || 
+        document.mozFullScreenElement || document.msFullscreenElement) {
         fullscreenLink.textContent = '❌ Stäng fullskärm';
+        document.documentElement.style.background = '#0f0f1e';
+        document.body.style.background = '#0f0f1e';
     } else {
         fullscreenLink.textContent = '📱 Fullskärm';
+        document.documentElement.style.background = '#0f0f1e';
+        document.body.style.background = '#0f0f1e';
     }
 }
 
