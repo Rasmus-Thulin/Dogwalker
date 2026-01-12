@@ -19,6 +19,7 @@ const eveningFeedButton = document.getElementById('eveningFeedButton');
 const morningStatus = document.getElementById('morningStatus');
 const eveningStatus = document.getElementById('eveningStatus');
 const fullscreenLink = document.getElementById('fullscreenLink');
+const settingsLink = document.getElementById('settingsLink');
 const weatherBadge = document.getElementById('weatherBadge');
 
 // ===== STATE =====
@@ -46,17 +47,18 @@ function init() {
     morningFeedButton.addEventListener('click', () => handleFeedingClick('morning'));
     eveningFeedButton.addEventListener('click', () => handleFeedingClick('evening'));
     fullscreenLink.addEventListener('click', toggleFullscreen);
+    settingsLink.addEventListener('click', showSettingsModal);
     timerDisplay.addEventListener('click', toggleEditMode);
 
     // Touch events for time adjustment
     hoursElement.addEventListener('touchstart', (e) => handleTouchStart(e, 'hours'));
     hoursElement.addEventListener('touchmove', handleTouchMove);
     hoursElement.addEventListener('touchend', handleTouchEnd);
-    
+
     minutesElement.addEventListener('touchstart', (e) => handleTouchStart(e, 'minutes'));
     minutesElement.addEventListener('touchmove', handleTouchMove);
     minutesElement.addEventListener('touchend', handleTouchEnd);
-    
+
     secondsElement.addEventListener('touchstart', (e) => handleTouchStart(e, 'seconds'));
     secondsElement.addEventListener('touchmove', handleTouchMove);
     secondsElement.addEventListener('touchend', handleTouchEnd);
@@ -240,17 +242,27 @@ function checkWeeklyReset() {
 
 // ===== FEEDING FUNCTIONS =====
 function checkDailyFeedingReset() {
-    const today = new Date();
-    const lastFeedingDate = localStorage.getItem('lastFeedingDate');
-    const todayStr = today.toDateString();
+    const now = new Date();
+    const lastFeedingReset = localStorage.getItem('lastFeedingReset');
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
 
-    if (lastFeedingDate !== todayStr) {
-        // New day - reset feeding status
-        localStorage.removeItem('morningFed');
-        localStorage.removeItem('eveningFed');
-        localStorage.removeItem('morningFedTime');
-        localStorage.removeItem('eveningFedTime');
-        localStorage.setItem('lastFeedingDate', todayStr);
+    // Check if it's 23:59 or later
+    const isPastResetTime = currentHour === 23 && currentMinute >= 59;
+
+    if (isPastResetTime) {
+        const todayResetTime = new Date(now);
+        todayResetTime.setHours(23, 59, 0, 0);
+        const resetKey = todayResetTime.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+        // Only reset if we haven't already reset today at 23:59
+        if (lastFeedingReset !== resetKey) {
+            localStorage.removeItem('morningFed');
+            localStorage.removeItem('eveningFed');
+            localStorage.removeItem('morningFedTime');
+            localStorage.removeItem('eveningFedTime');
+            localStorage.setItem('lastFeedingReset', resetKey);
+        }
     }
 }
 
@@ -588,7 +600,7 @@ function showNotification(message) {
 // ===== TIMER EDIT MODE =====
 function toggleEditMode() {
     editMode = !editMode;
-    
+
     if (editMode) {
         timerDisplay.classList.add('edit-mode');
         timerStatus.textContent = '👆 Dra på siffrorna för att justera';
@@ -610,28 +622,28 @@ let currentEditSegment = null;
 
 function handleTouchStart(e, segment) {
     if (!editMode) return;
-    
+
     e.preventDefault();
     currentEditSegment = segment;
     touchStartY = e.touches[0].clientY;
-    
-    const element = segment === 'hours' ? hoursElement : 
-                   segment === 'minutes' ? minutesElement : secondsElement;
+
+    const element = segment === 'hours' ? hoursElement :
+        segment === 'minutes' ? minutesElement : secondsElement;
     touchStartValue = parseInt(element.textContent);
-    
+
     element.classList.add('dragging');
 }
 
 function handleTouchMove(e) {
     if (!editMode || !currentEditSegment) return;
-    
+
     e.preventDefault();
     const touchY = e.touches[0].clientY;
     const deltaY = touchStartY - touchY; // Reversed: drag up = increase
     const steps = Math.floor(deltaY / 20); // 20px per step
-    
+
     let newValue = touchStartValue + steps;
-    
+
     // Apply constraints
     if (currentEditSegment === 'hours') {
         newValue = Math.max(0, Math.min(23, newValue));
@@ -643,17 +655,17 @@ function handleTouchMove(e) {
         newValue = Math.max(0, Math.min(59, newValue));
         secondsElement.textContent = newValue.toString().padStart(2, '0');
     }
-    
+
     updateNextWalkTime();
 }
 
 function handleTouchEnd(e) {
     if (!editMode || !currentEditSegment) return;
-    
-    const element = currentEditSegment === 'hours' ? hoursElement : 
-                   currentEditSegment === 'minutes' ? minutesElement : secondsElement;
+
+    const element = currentEditSegment === 'hours' ? hoursElement :
+        currentEditSegment === 'minutes' ? minutesElement : secondsElement;
     element.classList.remove('dragging');
-    
+
     currentEditSegment = null;
 }
 
@@ -661,7 +673,7 @@ function updateNextWalkTime() {
     const hours = parseInt(hoursElement.textContent);
     const minutes = parseInt(minutesElement.textContent);
     const seconds = parseInt(secondsElement.textContent);
-    
+
     const totalMs = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
     nextWalkTime = Date.now() + totalMs;
     localStorage.setItem('nextWalkTime', nextWalkTime.toString());
@@ -748,8 +760,8 @@ function showConfirmModal(message) {
 // ===== FULLSCREEN =====
 function toggleFullscreen() {
     const elem = document.documentElement;
-    
-    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+
+    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
         !document.mozFullScreenElement && !document.msFullscreenElement) {
         // Enter fullscreen
         if (elem.requestFullscreen) {
@@ -784,7 +796,7 @@ document.addEventListener('mozfullscreenchange', updateFullscreenText);
 document.addEventListener('MSFullscreenChange', updateFullscreenText);
 
 function updateFullscreenText() {
-    if (document.fullscreenElement || document.webkitFullscreenElement || 
+    if (document.fullscreenElement || document.webkitFullscreenElement ||
         document.mozFullScreenElement || document.msFullscreenElement) {
         fullscreenLink.textContent = '❌ Stäng fullskärm';
         document.documentElement.style.background = '#0f0f1e';
@@ -794,6 +806,167 @@ function updateFullscreenText() {
         document.documentElement.style.background = '#0f0f1e';
         document.body.style.background = '#0f0f1e';
     }
+}
+
+// ===== SETTINGS MODAL =====
+function showSettingsModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal modal-settings';
+
+    // Title
+    const title = document.createElement('h2');
+    title.className = 'modal-title';
+    title.textContent = '⚙️ Inställningar';
+    modal.appendChild(title);
+
+    // Members section
+    const membersSection = document.createElement('div');
+    membersSection.className = 'modal-section';
+
+    const membersTitle = document.createElement('h3');
+    membersTitle.className = 'modal-section-title';
+    membersTitle.textContent = '👥 Hantera poäng';
+    membersSection.appendChild(membersTitle);
+
+    const membersList = document.createElement('div');
+    membersList.className = 'settings-member-list';
+
+    // Get current leaderboard data
+    const leaderboardData = getLeaderboardData();
+    const familyMembers = FAMILY_MEMBERS;
+
+    familyMembers.forEach(memberName => {
+        const memberData = leaderboardData.find(d => d.name === memberName) || { name: memberName, count: 0 };
+
+        const memberItem = document.createElement('div');
+        memberItem.className = 'settings-member-item';
+
+        // Member info
+        const memberInfo = document.createElement('div');
+        memberInfo.className = 'settings-member-info';
+
+        const icon = document.createElement('span');
+        icon.className = 'settings-member-icon';
+        // Get icon from family selector
+        const memberRadio = document.querySelector(`#walker-${memberName.toLowerCase()}`);
+        if (memberRadio) {
+            const memberButton = memberRadio.parentElement.querySelector('.member-icon');
+            icon.textContent = memberButton ? memberButton.textContent : '👤';
+        } else {
+            icon.textContent = '👤';
+        }
+
+        const name = document.createElement('span');
+        name.className = 'settings-member-name';
+        name.textContent = memberName;
+
+        memberInfo.appendChild(icon);
+        memberInfo.appendChild(name);
+
+        // Points controls
+        const pointsControls = document.createElement('div');
+        pointsControls.className = 'settings-member-points';
+
+        const minusBtn = document.createElement('button');
+        minusBtn.className = 'settings-points-btn';
+        minusBtn.textContent = '−';
+        minusBtn.onclick = () => {
+            adjustMemberPoints(memberName, -1);
+            updateMemberPointsSpan(memberName, pointsValue);
+        };
+
+        const pointsValue = document.createElement('span');
+        pointsValue.className = 'settings-points-value';
+        pointsValue.textContent = memberData.count;
+        pointsValue.dataset.member = memberName;
+
+        const plusBtn = document.createElement('button');
+        plusBtn.className = 'settings-points-btn';
+        plusBtn.textContent = '+';
+        plusBtn.onclick = () => {
+            adjustMemberPoints(memberName, 1);
+            updateMemberPointsSpan(memberName, pointsValue);
+        };
+
+        pointsControls.appendChild(minusBtn);
+        pointsControls.appendChild(pointsValue);
+        pointsControls.appendChild(plusBtn);
+
+        memberItem.appendChild(memberInfo);
+        memberItem.appendChild(pointsControls);
+        membersList.appendChild(memberItem);
+    });
+
+    membersSection.appendChild(membersList);
+    modal.appendChild(membersSection);
+
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'settings-close-btn';
+    closeBtn.textContent = 'Stäng';
+    closeBtn.onclick = () => {
+        overlay.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+            // Refresh leaderboard
+            updateLeaderboard();
+        }, 300);
+    };
+    modal.appendChild(closeBtn);
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Animate in
+    setTimeout(() => {
+        overlay.classList.add('show');
+    }, 10);
+
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closeBtn.click();
+        }
+    });
+}
+
+function updateMemberPointsSpan(memberName, spanElement) {
+    const leaderboardData = getLeaderboardData();
+    const memberData = leaderboardData.find(d => d.name === memberName);
+    spanElement.textContent = memberData ? memberData.count : 0;
+}
+
+function adjustMemberPoints(memberName, delta) {
+    const walks = getWalks();
+    const currentCount = walks.filter(w => w.walker === memberName).length;
+    const newCount = Math.max(0, currentCount + delta);
+
+    if (delta > 0) {
+        // Add a walk
+        for (let i = 0; i < delta; i++) {
+            walks.push({ walker: memberName, timestamp: Date.now() });
+        }
+    } else if (delta < 0) {
+        // Remove walks
+        const toRemove = Math.abs(delta);
+        const memberWalks = walks.filter(w => w.walker === memberName);
+        const walksToRemove = memberWalks.slice(-toRemove);
+
+        walksToRemove.forEach(walkToRemove => {
+            const index = walks.findIndex(w =>
+                w.walker === walkToRemove.walker &&
+                w.timestamp === walkToRemove.timestamp
+            );
+            if (index !== -1) {
+                walks.splice(index, 1);
+            }
+        });
+    }
+
+    localStorage.setItem('walks', JSON.stringify(walks));
 }
 
 // ===== START APP =====
