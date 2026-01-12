@@ -988,6 +988,32 @@ body::before {
     transform: scale(0.95);
 }
 
+.settings-delete-btn {
+    margin-left: auto;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 77, 77, 0.15);
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.settings-delete-btn:hover {
+    background: rgba(255, 77, 77, 0.3);
+    border-color: rgba(255, 77, 77, 0.5);
+    transform: scale(1.1);
+}
+
+.settings-delete-btn:active {
+    transform: scale(0.95);
+}
+
 .settings-close-btn {
     width: 100%;
     padding: var(--spacing-md);

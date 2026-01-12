@@ -1,8 +1,50 @@
 // ===== CONSTANTS =====
 const WALK_INTERVAL = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
-const FAMILY_MEMBERS = ['Rasmus', 'Maria', 'Melwin', 'Elliot'];
 const DEFAULT_LOCATION = { latitude: 59.3293, longitude: 18.0686, label: 'Stockholm' };
 const WEATHER_REFRESH_MS = 30 * 60 * 1000;
+
+// ===== FAMILY MEMBERS MANAGEMENT =====
+function getFamilyMembers() {
+    const saved = localStorage.getItem('familyMembers');
+    if (saved) {
+        return JSON.parse(saved);
+    }
+    // Default members
+    const defaultMembers = [
+        { name: 'Rasmus', icon: '👨' },
+        { name: 'Maria', icon: '👩' },
+        { name: 'Melwin', icon: '👦' },
+        { name: 'Elliot', icon: '🧒' }
+    ];
+    localStorage.setItem('familyMembers', JSON.stringify(defaultMembers));
+    return defaultMembers;
+}
+
+function addFamilyMember(name, icon) {
+    const members = getFamilyMembers();
+    if (members.find(m => m.name === name)) {
+        return false; // Already exists
+    }
+    members.push({ name, icon });
+    localStorage.setItem('familyMembers', JSON.stringify(members));
+    return true;
+}
+
+function removeFamilyMember(name) {
+    const members = getFamilyMembers();
+    const filtered = members.filter(m => m.name !== name);
+    if (filtered.length === members.length) {
+        return false; // Not found
+    }
+    localStorage.setItem('familyMembers', JSON.stringify(filtered));
+
+    // Also remove all walks by this member
+    const walks = getWalks();
+    const updatedWalks = walks.filter(w => w.walker !== name);
+    localStorage.setItem('walks', JSON.stringify(updatedWalks));
+
+    return true;
+}
 
 // ===== DOM ELEMENTS =====
 const timerDisplay = document.getElementById('timerDisplay');
@@ -66,6 +108,9 @@ function init() {
     // Start countdown
     startCountdown();
 
+    // Render family selector
+    renderFamilySelector();
+
     // Update leaderboard
     updateLeaderboard();
 
@@ -78,6 +123,45 @@ function init() {
     // Weather background
     initWeather();
 }
+
+// ===== RENDER FAMILY SELECTOR =====
+function renderFamilySelector() {
+    const familyMembersContainer = document.querySelector('.family-members');
+    if (!familyMembersContainer) return;
+
+    familyMembersContainer.innerHTML = '';
+    const members = getFamilyMembers();
+
+    members.forEach((member, index) => {
+        const label = document.createElement('label');
+        label.className = 'family-member';
+
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'walker';
+        input.value = member.name;
+        input.id = `walker-${member.name.toLowerCase()}`;
+        if (index === 0) input.checked = true;
+
+        const button = document.createElement('span');
+        button.className = 'member-button';
+
+        const icon = document.createElement('span');
+        icon.className = 'member-icon';
+        icon.textContent = member.icon;
+
+        const name = document.createElement('span');
+        name.className = 'member-name';
+        name.textContent = member.name;
+
+        button.appendChild(icon);
+        button.appendChild(name);
+        label.appendChild(input);
+        label.appendChild(button);
+        familyMembersContainer.appendChild(label);
+    });
+}
+
 
 // ===== WEATHER =====
 async function initWeather() {
@@ -351,11 +435,12 @@ function addWalk(walker, timestamp) {
 
 function getLeaderboardData() {
     const walks = getWalks();
+    const members = getFamilyMembers();
     const leaderboard = {};
 
     // Initialize all family members with 0
-    FAMILY_MEMBERS.forEach(member => {
-        leaderboard[member] = 0;
+    members.forEach(member => {
+        leaderboard[member.name] = 0;
     });
 
     // Count walks per person
@@ -809,6 +894,8 @@ function updateFullscreenText() {
 }
 
 // ===== SETTINGS MODAL =====
+// Replace the showSettingsModal function with this version
+
 function showSettingsModal() {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
@@ -821,6 +908,60 @@ function showSettingsModal() {
     title.className = 'modal-title';
     title.textContent = '⚙️ Inställningar';
     modal.appendChild(title);
+
+    // Add member section
+    const addSection = document.createElement('div');
+    addSection.className = 'modal-section';
+
+    const addTitle = document.createElement('h3');
+    addTitle.className = 'modal-section-title';
+    addTitle.textContent = '➕ Lägg till person';
+    addSection.appendChild(addTitle);
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'modal-input';
+    nameInput.placeholder = 'Namn (t.ex. Gäst)';
+    addSection.appendChild(nameInput);
+
+    const iconInput = document.createElement('input');
+    iconInput.type = 'text';
+    iconInput.className = 'modal-input';
+    iconInput.placeholder = 'Emoji (t.ex. 👤)';
+    iconInput.maxLength = 2;
+    addSection.appendChild(iconInput);
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'settings-close-btn';
+    addBtn.style.marginBottom = '0';
+    addBtn.textContent = 'Lägg till';
+    addBtn.onclick = () => {
+        const name = nameInput.value.trim();
+        const icon = iconInput.value.trim() || '👤';
+
+        if (!name) {
+            showNotification('⚠️ Ange ett namn');
+            return;
+        }
+
+        const success = addFamilyMember(name, icon);
+        if (success) {
+            showNotification(`✅ ${name} har lagts till!`);
+            nameInput.value = '';
+            iconInput.value = '';
+            // Refresh modal
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                renderFamilySelector();
+                showSettingsModal();
+            }, 300);
+        } else {
+            showNotification(`⚠️ ${name} finns redan`);
+        }
+    };
+    addSection.appendChild(addBtn);
+    modal.appendChild(addSection);
 
     // Members section
     const membersSection = document.createElement('div');
@@ -836,10 +977,10 @@ function showSettingsModal() {
 
     // Get current leaderboard data
     const leaderboardData = getLeaderboardData();
-    const familyMembers = FAMILY_MEMBERS;
+    const familyMembers = getFamilyMembers();
 
-    familyMembers.forEach(memberName => {
-        const memberData = leaderboardData.find(d => d.name === memberName) || { name: memberName, count: 0 };
+    familyMembers.forEach(member => {
+        const memberData = leaderboardData.find(d => d.name === member.name) || { name: member.name, count: 0 };
 
         const memberItem = document.createElement('div');
         memberItem.className = 'settings-member-item';
@@ -850,21 +991,34 @@ function showSettingsModal() {
 
         const icon = document.createElement('span');
         icon.className = 'settings-member-icon';
-        // Get icon from family selector
-        const memberRadio = document.querySelector(`#walker-${memberName.toLowerCase()}`);
-        if (memberRadio) {
-            const memberButton = memberRadio.parentElement.querySelector('.member-icon');
-            icon.textContent = memberButton ? memberButton.textContent : '👤';
-        } else {
-            icon.textContent = '👤';
-        }
+        icon.textContent = member.icon;
 
         const name = document.createElement('span');
         name.className = 'settings-member-name';
-        name.textContent = memberName;
+        name.textContent = member.name;
+
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'settings-delete-btn';
+        deleteBtn.textContent = '🗑️';
+        deleteBtn.title = `Ta bort ${member.name}`;
+        deleteBtn.onclick = async () => {
+            const confirm = await showConfirmModal(`Ta bort ${member.name}?`);
+            if (confirm) {
+                removeFamilyMember(member.name);
+                showNotification(`🗑️ ${member.name} har tagits bort`);
+                overlay.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                    renderFamilySelector();
+                    updateLeaderboard();
+                }, 300);
+            }
+        };
 
         memberInfo.appendChild(icon);
         memberInfo.appendChild(name);
+        memberInfo.appendChild(deleteBtn);
 
         // Points controls
         const pointsControls = document.createElement('div');
@@ -873,22 +1027,23 @@ function showSettingsModal() {
         const minusBtn = document.createElement('button');
         minusBtn.className = 'settings-points-btn';
         minusBtn.textContent = '−';
-        minusBtn.onclick = () => {
-            adjustMemberPoints(memberName, -1);
-            updateMemberPointsSpan(memberName, pointsValue);
-        };
 
         const pointsValue = document.createElement('span');
         pointsValue.className = 'settings-points-value';
         pointsValue.textContent = memberData.count;
-        pointsValue.dataset.member = memberName;
+        pointsValue.dataset.member = member.name;
+
+        minusBtn.onclick = () => {
+            adjustMemberPoints(member.name, -1);
+            updateMemberPointsSpan(member.name, pointsValue);
+        };
 
         const plusBtn = document.createElement('button');
         plusBtn.className = 'settings-points-btn';
         plusBtn.textContent = '+';
         plusBtn.onclick = () => {
-            adjustMemberPoints(memberName, 1);
-            updateMemberPointsSpan(memberName, pointsValue);
+            adjustMemberPoints(member.name, 1);
+            updateMemberPointsSpan(member.name, pointsValue);
         };
 
         pointsControls.appendChild(minusBtn);
@@ -911,7 +1066,8 @@ function showSettingsModal() {
         overlay.classList.remove('show');
         setTimeout(() => {
             document.body.removeChild(overlay);
-            // Refresh leaderboard
+            // Refresh leaderboard and family selector
+            renderFamilySelector();
             updateLeaderboard();
         }, 300);
     };
