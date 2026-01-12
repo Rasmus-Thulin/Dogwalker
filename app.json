@@ -1,0 +1,18 @@
+{
+    "name": "dogwalker",
+    "description": "Rosie's Promenad Timer - en app för att hålla koll på hundpromenader",
+    "keywords": [
+        "dogwalker",
+        "timer",
+        "nodejs",
+        "express"
+    ],
+    "website": "https://github.com/DITT_ANVÄNDARNAMN/Dogwalker",
+    "repository": "https://github.com/DITT_ANVÄNDARNAMN/Dogwalker",
+    "env": {
+        "PORT": {
+            "description": "Port som servern lyssnar på",
+            "value": "3000"
+        }
+    }
+}

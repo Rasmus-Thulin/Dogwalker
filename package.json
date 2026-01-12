@@ -1,0 +1,19 @@
+{
+  "name": "dogwalker",
+  "version": "1.0.0",
+  "description": "Rosie's Promenad Timer - en app för att hålla koll på hundpromenader",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["dogwalker", "timer", "rosie"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

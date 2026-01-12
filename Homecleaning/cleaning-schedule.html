@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Städschema för familjen - håll koll på städuppgifter">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Familjens Städschema</title>
+    <link rel="stylesheet" href="cleaning-style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <h1 class="app-title">🏠 Städschema</h1>
+                    <button class="settings-button" id="settingsButton">⚙️</button>
+                </div>
+                <div class="weather-badge" id="weatherBadge">Hämtar väder...</div>
+            </div>
+
+            <!-- Upcoming Tasks -->
+            <div class="tasks-section glass-card">
+                <h2 class="section-title">📋 Kommande uppgifter</h2>
+                <div class="tasks-list" id="upcomingTasks">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+
+            <!-- Quick Action Buttons -->
+            <div class="quick-actions">
+                <button class="action-button" id="addTaskButton">
+                    <span class="button-icon">✅</span>
+                    <span class="button-text">Registrera städuppgift</span>
+                </button>
+            </div>
+
+
+            <!-- Leaderboard -->
+            <div class="leaderboard glass-card">
+                <h2 class="section-title">🏆 Städhjältar denna vecka</h2>
+                <div class="leaderboard-list" id="leaderboardList">
+                    <!-- Populated by JavaScript -->
+                </div>
+                <div class="last-task" id="lastTask"></div>
+            </div>
+
+            <!-- Completed Tasks This Week -->
+            <div class="completed-section glass-card">
+                <h2 class="section-title">✅ Klara uppgifter denna vecka</h2>
+                <div class="completed-count" id="completedCount">0 uppgifter</div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p id="footerText">Gjord med ❤️ för familjen</p>
+            <p class="fullscreen-link" id="fullscreenLink">📱 Fullskärm</p>
+        </footer>
+    </div>
+
+    <script src="cleaning-script.js"></script>
+</body>
+
+</html>
