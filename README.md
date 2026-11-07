@@ -23,6 +23,25 @@ Open http://localhost:5175/. This app needs its Node server; static hosting alon
 
 OAuth uses PKCE. Credentials and tokens are stored locally by the server, not in browser storage or the repository.
 
+## Production Configuration
+
+Configure these variables in your hosting service's environment settings:
+
+```text
+NODE_ENV=production
+TIBBER_CLIENT_ID=<your client ID>
+TIBBER_CLIENT_SECRET=<your rotated client secret>
+TIBBER_REDIRECT_URI=https://<your app domain>/
+```
+
+Register the exact `TIBBER_REDIRECT_URI` value as a callback URL in your Tibber client. Once configured, open **Settings** and select **Connect Tibber**; you do not need to save client credentials in the browser.
+
+In production, or whenever Tibber credentials are supplied through environment variables, the server ignores the local client configuration file and disables browser credential changes. Both client variables are required. The frontend hides the credential form, and the secret is never returned by the status API.
+
+The local-only settings error is intentional protection, not a reason to allow arbitrary origins. Do not hardcode secrets in JavaScript or commit them to GitHub. Rotate any secret shared in chat or source code before deploying.
+
+For local environment configuration, use `.env.example` as the template for an ignored `.env` file. Use persistent private storage for the server user's OAuth token file if you want the Tibber connection to survive redeployments. Public hosting still requires access control; environment variables alone do not make this dashboard safe to expose publicly.
+
 ## Automatic Updates
 
 Vehicle data is fetched on startup and every 60 seconds by default. Settings can change the interval from 60 to 3,600 seconds. The app also refreshes when the tab becomes visible or the network reconnects.

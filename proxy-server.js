@@ -22,6 +22,8 @@ const clientConfig = {
     clientId: process.env.TIBBER_CLIENT_ID || '',
     clientSecret: process.env.TIBBER_CLIENT_SECRET || ''
 };
+const configurationManaged = process.env.NODE_ENV === 'production' ||
+    Boolean(process.env.TIBBER_CLIENT_ID || process.env.TIBBER_CLIENT_SECRET);
 
 app.use(cors({ origin: /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/ }));
 app.use(express.json());
@@ -35,11 +37,13 @@ try {
     }
 }
 
-try {
-    Object.assign(clientConfig, JSON.parse(fs.readFileSync(configPath, 'utf8')));
-} catch (error) {
-    if (error.code !== 'ENOENT') {
-        console.error('Could not read the local Tibber configuration:', error.message);
+if (!configurationManaged) {
+    try {
+        Object.assign(clientConfig, JSON.parse(fs.readFileSync(configPath, 'utf8')));
+    } catch (error) {
+        if (error.code !== 'ENOENT') {
+            console.error('Could not read the local Tibber configuration:', error.message);
+        }
     }
 }
 
@@ -169,7 +173,9 @@ function getRecord(payload, keys) {
 
 app.get('/auth/login', (req, res) => {
     if (!isConfigured()) {
-        return res.status(503).send('Enter your Tibber Client ID and Client Secret in Settings first.');
+        return res.status(503).send(configurationManaged
+            ? 'Set TIBBER_CLIENT_ID and TIBBER_CLIENT_SECRET on the server first.'
+            : 'Enter your Tibber Client ID and Client Secret in Settings first.');
     }
 
     const state = crypto.randomBytes(24).toString('hex');
@@ -242,11 +248,15 @@ app.get('/api/auth/status', (req, res) => {
     res.json({
         configured: isConfigured(),
         connected: Boolean(tokenData?.refresh_token),
-        clientId: clientConfig.clientId
+        clientId: clientConfig.clientId,
+        managed: configurationManaged
     });
 });
 
 app.post('/api/auth/config', (req, res) => {
+    if (configurationManaged) {
+        return res.status(403).json({ error: 'Credentials are managed by server environment variables.' });
+    }
     if (!isLocalOrigin(req.get('origin') || '')) {
         return res.status(403).json({ error: 'Settings can only be changed from this local app.' });
     }

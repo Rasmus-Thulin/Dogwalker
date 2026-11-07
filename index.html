@@ -34,12 +34,14 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <p id="connectionStatus">Checking Tibber connection...</p>
-                        <label for="tibberClientId">Tibber Client ID:</label>
-                        <input type="text" id="tibberClientId" autocomplete="off" placeholder="Tibber Data API Client ID">
-                        <label for="tibberClientSecret">Tibber Client Secret:</label>
-                        <input type="password" id="tibberClientSecret" autocomplete="new-password" placeholder="Tibber Data API Client Secret">
-                        <small>Credentials are stored locally on this computer, not in browser storage.</small>
-                        <button id="saveTibberConfig" class="btn-save">Save credentials</button>
+                        <div id="tibberCredentials">
+                            <label for="tibberClientId">Tibber Client ID:</label>
+                            <input type="text" id="tibberClientId" autocomplete="off" placeholder="Tibber Data API Client ID">
+                            <label for="tibberClientSecret">Tibber Client Secret:</label>
+                            <input type="password" id="tibberClientSecret" autocomplete="new-password" placeholder="Tibber Data API Client Secret">
+                            <small>Credentials are stored locally on this computer, not in browser storage.</small>
+                            <button id="saveTibberConfig" class="btn-save">Save credentials</button>
+                        </div>
                         <a id="connectTibber" class="btn-save" href="/auth/login">Connect Tibber</a>
                     </div>
                     <div class="form-group">

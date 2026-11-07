@@ -427,19 +427,23 @@ class ChargingDashboard {
             const response = await fetch(`${this.apiBase}/api/auth/status`);
             const status = await response.json();
             const clientIdInput = document.getElementById('tibberClientId');
+            document.getElementById('tibberCredentials').hidden = Boolean(status.managed);
             if (status.clientId && !clientIdInput.value) clientIdInput.value = status.clientId;
+            const configurationPrompt = status.managed
+                ? 'Configure TIBBER_CLIENT_ID and TIBBER_CLIENT_SECRET on the server.'
+                : 'Enter your Tibber Client ID and Client Secret below.';
             document.getElementById('connectionStatus').textContent = status.connected
                 ? 'Your Tibber account is connected.'
                 : status.configured
                     ? 'Connect your Tibber account to view live data.'
-                    : 'Enter your Tibber Client ID and Client Secret below.';
+                    : configurationPrompt;
             if (status.connected) {
                 await this.fetchData();
             } else {
                 this.displayDevices([]);
                 this.showError(status.configured
                     ? 'Connect your Tibber account in Settings to view live data.'
-                    : 'Enter your Tibber Client ID and Client Secret in Settings.');
+                    : configurationPrompt);
             }
         } catch (error) {
             document.getElementById('connectionStatus').textContent = 'Cannot reach the local server.';
@@ -501,6 +505,7 @@ class ChargingDashboard {
                 license: 'CC BY 4.0',
                 paintClass: 'paint-graphite',
                 paintFinish: 'gloss',
+                lighting: { exposure: 0.7, lightIntensity: 2 },
                 paintColor: [0.07, 0.075, 0.08],
                 paintMaterials: ['Carro_Pintura']
             },
@@ -531,6 +536,7 @@ class ChargingDashboard {
             cameraHeading: presentation?.cameraHeading || 0,
             paintColor: presentation?.paintColor || null,
             paintFinish: presentation?.paintFinish || '',
+            lighting: presentation?.lighting || null,
             paintMaterials: presentation?.paintMaterials || [],
             homeName: device.homeName || '',
             metrics,
@@ -631,6 +637,7 @@ class ChargingDashboard {
                     api.addEventListener('viewerready', () => {
                         if (!viewer.isConnected) return;
                         this.applyVehiclePaint(api, vehicle);
+                        if (vehicle.lighting) api.setEnvironment(vehicle.lighting);
                         api.setUserInteraction(true);
                         this.frameVehicle(api, viewer, vehicle);
                     });
