@@ -1,6 +1,6 @@
 # HomeScreen
 
-A portrait-oriented Tesla charging dashboard powered by the [Tibber Data API](https://data-api.tibber.com/docs/). Gullan and Tessan appear together in separate cards with rotatable 3D models, battery level, range and charging status.
+A weather and Tesla dashboard powered by the [Tibber Data API](https://data-api.tibber.com/docs/). Gullan and Tessan appear together in separate cards with rotatable 3D models, battery level, range and charging status.
 
 ## Run Locally
 
@@ -41,6 +41,12 @@ In production, or whenever Tibber credentials are supplied through environment v
 The local-only settings error is intentional protection, not a reason to allow arbitrary origins. Do not hardcode secrets in JavaScript or commit them to GitHub. Rotate any secret shared in chat or source code before deploying.
 
 For local environment configuration, use `.env.example` as the template for an ignored `.env` file. Use persistent private storage for the server user's OAuth token file if you want the Tibber connection to survive redeployments. Public hosting still requires access control; environment variables alone do not make this dashboard safe to expose publicly.
+
+## Display and weather
+
+The header shows a live clock, animated weather conditions and a six-hour forecast from [Open-Meteo](https://open-meteo.com/). The browser requests the device location on startup and uses Ödåkra when location access is denied, unavailable or times out. Device coordinates are rounded to city-level precision and sent to Open-Meteo for weather and BigDataCloud for the locality name; they are not saved in browser storage. Change the city manually or retry **Use my location** through **Login** in the footer. Weather refreshes every 15 minutes and retains the last successful forecast during temporary errors.
+
+Use **Fullscreen** in the footer to enter or exit fullscreen (Escape also exits). Browsers without the Fullscreen API can use their own fullscreen controls. The display adapts between stacked portrait cards and side-by-side landscape cards. Weather and charging animations respect reduced-motion preferences.
 
 ## Automatic Updates
 

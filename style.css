@@ -2709,3 +2709,99 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* HomeScreen: a quiet, full-screen weather and vehicle display. */
+.portrait-dashboard {
+    --text-primary: #f2f2f5;
+    --text-secondary: #f2f2f5;
+    --muted-text: #f2f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: radial-gradient(ellipse at 50% 0, #202937 0, #0b0d12 42%, #060709 100%);
+}
+.portrait-dashboard .container { width: min(100% - 48px, 880px); padding: 24px 0 16px; gap: 20px; }
+.weather-widget { position: relative; isolation: isolate; overflow: hidden; padding: 26px 30px 20px; border-radius: 28px; border: 1px solid #ffffff24; background: linear-gradient(145deg, #40678a, #223d61 65%, #172b48); box-shadow: 0 18px 60px #0003, inset 0 1px #ffffff16; }
+.weather-widget[data-weather="sunny"] { background: linear-gradient(135deg, #467f9d, #284a70); }
+.weather-widget[data-weather="night"] { background: linear-gradient(135deg, #1c2d52, #101a32); }
+.weather-widget[data-weather="rain"], .weather-widget[data-weather="storm"] { background: linear-gradient(135deg, #485b70, #23354d); }
+.weather-widget[data-weather="snow"], .weather-widget[data-weather="fog"] { background: linear-gradient(135deg, #647e92, #354b65); }
+.weather-topline, .weather-current { position: relative; text-align: center; }
+.weather-topline { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.weather-topline p { font-size: 1.1rem; font-weight: 500; }
+.weather-topline time { font-size: .78rem; }
+.weather-current { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: 28px; width: min(100%, 560px); margin: 0 auto; padding: 14px 0 24px; }
+.weather-temperature { font-size: clamp(3.6rem, 9vw, 5.4rem); font-weight: 200; letter-spacing: -.065em !important; line-height: 1.2; }
+#weatherCondition { font-size: .95rem; }
+#weatherHighLow { font-size: .78rem; margin-top: 2px; }
+.dashboard-clock { font-size: clamp(2.7rem, 8vw, 5rem); font-weight: 200; letter-spacing: -.05em !important; font-variant-numeric: tabular-nums; line-height: 1; }
+.weather-hourly { position: relative; width: min(100%, 640px); margin: 0 auto; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; min-height: 74px; padding-top: 14px; border-top: 1px solid #ffffff24; }
+.weather-hourly > div { display: grid; gap: 2px; justify-items: center; font-size: .74rem; }
+.forecast-icon { font-size: 1.25rem; line-height: 1.4; }
+.weather-hourly strong { font-weight: 500; font-size: .95rem; }
+.weather-atmosphere { position: absolute; z-index: -1; inset: 0; pointer-events: none; overflow: hidden; }
+.weather-orb { position: absolute; width: 140px; height: 140px; right: 20%; top: -30px; border-radius: 50%; background: #fff4d4; box-shadow: 0 0 70px 35px #f7d49330; opacity: .42; animation: sun-breathe 8s ease-in-out infinite alternate; }
+.weather-cloud { position: absolute; width: 280px; height: 100px; border-radius: 50%; background: #ecf4ff; filter: blur(23px); opacity: .15; animation: cloud-drift 24s ease-in-out infinite alternate; }
+.cloud-one { right: -60px; top: 40px; }
+.cloud-two { right: 12%; top: 5px; width: 210px; animation-delay: -12s; }
+[data-weather="night"] .weather-orb { width: 70px; height: 70px; right: 24%; top: 24px; box-shadow: 0 0 45px #d6e1ff55; }
+[data-weather="sunny"] .weather-cloud, [data-weather="night"] .weather-cloud { opacity: .05; }
+[data-weather="rain"] .weather-orb, [data-weather="snow"] .weather-orb, [data-weather="storm"] .weather-orb, [data-weather="fog"] .weather-orb { display: none; }
+.weather-particles i { position: absolute; top: -20px; left: var(--x); width: 1px; height: 18px; background: #edf4ff65; animation: rainfall 1.3s linear infinite; animation-delay: var(--delay); }
+[data-weather="snow"] .weather-particles i { width: 4px; height: 4px; border-radius: 50%; animation-duration: 7s; }
+[data-weather="storm"] .weather-atmosphere { animation: lightning 9s infinite; }
+@keyframes cloud-drift { to { transform: translateX(-80px); } }
+@keyframes sun-breathe { to { opacity: .65; transform: scale(1.1); } }
+@keyframes rainfall { to { transform: translate(-45px, 380px); } }
+@keyframes lightning { 0%, 93%, 96%, 100% { opacity: .7; } 94%, 97% { opacity: 1; background: #ffffff16; } }
+.portrait-dashboard .garage-board { flex: 1; }
+.portrait-dashboard .vehicle-panel { border-radius: 24px; --vehicle-accent: #edf1f8; background: linear-gradient(145deg, #23262d, #15171d 75%); border-color: #ffffff12; }
+.portrait-dashboard .vehicle-panel-heading { padding: 18px 24px 0; }
+.portrait-dashboard .vehicle-panel-heading h2 { font-family: inherit; font-size: 1.4rem; font-weight: 500; }
+.portrait-dashboard .vehicle-panel .console-stat > span,
+.portrait-dashboard .vehicle-panel .console-stat > strong,
+.portrait-dashboard .vehicle-panel-credit,
+.portrait-dashboard .modal-content,
+.portrait-dashboard .modal-content :is(h2, label, small, input, p, button, a, .close),
+.portrait-dashboard .error-message,
+.portrait-dashboard .empty-state,
+.portrait-dashboard .loading-indicator { color: var(--text-primary); }
+.portrait-dashboard .vehicle-panel .vehicle-panel-stats { grid-template-columns: 1fr auto; margin: 0 24px; gap: 14px 24px; }
+.portrait-dashboard .vehicle-panel .console-details { align-self: center; grid-row: 1; grid-template-columns: 1fr; padding: 0; border: 0; }
+.portrait-dashboard .vehicle-panel .console-main-stats { gap: 26px; }
+.portrait-dashboard .vehicle-panel .console-battery-track { grid-column: 1 / -1; grid-row: 2; position: relative; height: 12px; margin: 0 0 4px; border-radius: 20px; background: #ffffff0d; border: 1px solid #ffffff12; overflow: hidden; box-shadow: inset 0 2px 5px #0005; }
+.portrait-dashboard .vehicle-panel .console-battery-track span { position: relative; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8a9dab, #e4edf3); box-shadow: 0 0 12px #dce9ff25; transition: width 1s ease; }
+.portrait-dashboard .vehicle-panel .console-battery-track span::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0, transparent calc(10% - 1px), #14181c44 calc(10% - 1px), #14181c44 10%); }
+.portrait-dashboard .vehicle-panel .console-battery-track .is-charging { background: linear-gradient(90deg, #8a9dab, #f6fbff, #8a9dab); background-size: 200% 100%; animation: battery-flow 3s linear infinite; }
+@keyframes battery-flow { to { background-position: -200% 0; } }
+.dashboard-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 0 6px; font-size: .68rem; }
+.dashboard-footer > div { display: flex; gap: 20px; align-items: center; }
+.portrait-dashboard .text-button { display: inline; width: auto; padding: 4px 0; border: 0; border-radius: 0; background: none; font: inherit; color: var(--text-primary); }
+.portrait-dashboard .text-button:hover { transform: none; text-decoration: underline; }
+.dashboard-footer a { color: var(--text-primary); text-decoration: none; }
+.dashboard-footer a:hover { text-decoration: underline; }
+.portrait-dashboard .modal-content { max-height: 90svh; overflow-y: auto; border-radius: 24px; margin: 5svh auto; background: #171b23; }
+.portrait-dashboard .btn-save { background: #313b4c; border-color: #4a566a; text-decoration: none; }
+.portrait-dashboard .btn-save:hover { background: #414e64; border-color: #68758b; }
+.portrait-dashboard .modal-header h2 { font-family: inherit; }
+.portrait-dashboard :focus-visible { outline: 2px solid #f2f2f5; outline-offset: 4px; }
+@media (min-width: 1100px) and (orientation: landscape) {
+    .portrait-dashboard .container { width: min(100% - 72px, 1360px); }
+    .vehicle-panels { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
+    .vehicle-panel { min-height: 430px; }
+    .weather-widget { padding: 24px 32px; }
+    .weather-hourly { max-width: 640px; }
+}
+@media (max-width: 480px) {
+    .portrait-dashboard .container { width: calc(100% - 24px); padding-top: 12px; gap: 12px; }
+    .weather-widget { padding: 20px; border-radius: 22px; }
+    .weather-current { gap: 16px; }
+    .weather-topline time { font-size: .7rem; }
+    .weather-hourly { gap: 4px; }
+    .portrait-dashboard .vehicle-panel .vehicle-panel-stats { margin: 0 18px; gap: 12px; }
+    .portrait-dashboard .vehicle-panel .console-main-stats { gap: 12px; }
+    .dashboard-footer > div { gap: 12px; }
+    .dashboard-footer { font-size: .6rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .weather-atmosphere *, .weather-atmosphere, .portrait-dashboard .console-battery-track span { animation: none !important; }
+}
+.portrait-dashboard .vehicle-panel .console-details .console-stat:last-child > strong { color: var(--text-primary); }

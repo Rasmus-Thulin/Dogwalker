@@ -442,7 +442,7 @@ class ChargingDashboard {
             } else {
                 this.displayDevices([]);
                 this.showError(status.configured
-                    ? 'Connect your Tibber account in Settings to view live data.'
+                    ? 'Connect your Tibber account via Login below to view live data.'
                     : configurationPrompt);
             }
         } catch (error) {
@@ -743,7 +743,6 @@ class ChargingDashboard {
         const power = vehicle.metrics.find(metric => /power flow to vehicle battery/i.test(metric.label));
         const statusMetric = vehicle.metrics.find(metric => /vehicle charging status|charging status|charging state/i.test(metric.label));
         const rawStatus = String(statusMetric?.value || '').toLowerCase();
-        const labels = { charging: 'Charging', idle: 'Parked', connected: 'Connected', disconnected: 'Disconnected', complete: 'Complete' };
 
         const mainStats = document.createElement('div');
         mainStats.className = 'console-main-stats';
@@ -755,7 +754,6 @@ class ChargingDashboard {
         const details = document.createElement('div');
         details.className = 'console-details';
         details.append(
-            this.createConsoleStat('Charge status', labels[rawStatus] || 'Unknown', rawStatus === 'charging' ? 'console-charging' : ''),
             this.createConsoleStat(target ? 'Charge limit' : 'Charge power', target ? `${target.value}%` : power ? `${power.value} ${power.unit}` : '–', '')
         );
 
@@ -764,6 +762,18 @@ class ChargingDashboard {
         const fill = document.createElement('span');
         fill.style.width = `${Math.max(0, Math.min(100, Number(battery?.value) || 0))}%`;
         fill.className = rawStatus === 'charging' ? 'is-charging' : '';
+        batteryTrack.setAttribute('role', 'meter');
+        batteryTrack.setAttribute('aria-label', 'Battery level');
+        batteryTrack.setAttribute('aria-valuemin', '0');
+        batteryTrack.setAttribute('aria-valuemax', '100');
+        const level = Number(battery?.value);
+        if (battery && Number.isFinite(level)) {
+            batteryTrack.setAttribute('aria-valuenow', String(Math.max(0, Math.min(100, level))));
+            batteryTrack.setAttribute('aria-valuetext', `${Math.round(level)} percent${rawStatus === 'charging' ? ', charging' : ''}`);
+        } else {
+            batteryTrack.setAttribute('aria-valuetext', 'Battery level unavailable');
+            batteryTrack.classList.add('is-unknown');
+        }
         batteryTrack.appendChild(fill);
         stats.append(mainStats, batteryTrack, details);
     }
