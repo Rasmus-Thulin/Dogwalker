@@ -1,96 +1,70 @@
 <!DOCTYPE html>
-<html lang="sv">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Håll koll på när det är dags att gå ut med Rosie">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Rosie's Promenad Timer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garage | Charging Status</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
-<body>
+<body class="portrait-dashboard">
     <div class="container">
-        <!-- Main Timer Display -->
-        <main class="main-content">
-            <!-- Feeding Buttons -->
-            <div class="feeding-buttons">
-                <button class="feeding-button" id="morningFeedButton">
-                    <span class="feeding-heading">
-                        <span class="feeding-label">Mat morgon</span>
-                        <span class="feeding-pill">08:00</span>
-                    </span>
-                    <span class="feeding-status" id="morningStatus">Ej given</span>
-                </button>
-                <button class="feeding-button" id="eveningFeedButton">
-                    <span class="feeding-heading">
-                        <span class="feeding-label">Mat kväll</span>
-                        <span class="feeding-pill">18:00</span>
-                    </span>
-                    <span class="feeding-status" id="eveningStatus">Ej given</span>
-                </button>
-            </div>
-
-            <div class="timer-card glass-card">
-                <div class="timer-label">Nästa promenad om</div>
-                <div class="timer-display" id="timerDisplay">
-                    <span class="time-segment">
-                        <span class="time-value" id="hours">00</span>
-                        <span class="time-unit">h</span>
-                    </span>
-                    <span class="time-separator">:</span>
-                    <span class="time-segment">
-                        <span class="time-value" id="minutes">00</span>
-                        <span class="time-unit">m</span>
-                    </span>
-                    <span class="time-separator">:</span>
-                    <span class="time-segment">
-                        <span class="time-value" id="seconds">00</span>
-                        <span class="time-unit">s</span>
-                    </span>
+        <header class="dashboard-header">
+            <div class="header-main">
+                <div>
+                    <h1>Garage</h1>
                 </div>
-                <div class="timer-status" id="timerStatus"></div>
-                <div class="weather-badge" id="weatherBadge">Hämtar väder...</div>
-            </div>
-
-            <!-- Family Member Selector -->
-            <div class="family-selector glass-card">
-                <h2 class="section-title">Vem går ut?</h2>
-                <div class="family-members">
-                    <!-- Populated by JavaScript -->
+                <div class="header-tools">
+                    <time id="lastUpdated" title="Last updated">--:--</time>
+                    <button id="settingsBtn" class="icon-button" type="button" title="Settings" aria-label="Settings">⚙</button>
                 </div>
             </div>
+        </header>
 
-            <!-- Main Action Button -->
-            <button class="walk-button" id="walkButton">
-                <span class="button-icon">🐾</span>
-                <span class="button-text">Gått ut med hunden!</span>
-            </button>
-
-            <!-- Leaderboard -->
-            <div class="leaderboard glass-card">
-                <h2 class="section-title">🏆 Highscore</h2>
-                <div class="leaderboard-list" id="leaderboardList">
-                    <!-- Populated by JavaScript -->
-                </div>
-                <div class="last-walk" id="lastWalk"></div>
-            </div>
+        <main class="garage-board">
+            <div id="carsContainer" class="vehicle-panels" aria-label="Vehicle overview"></div>
         </main>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <p id="footerText">Gjord med ❤️ för Rosie</p>
-            <div class="footer-links">
-                <p class="footer-link" id="settingsLink">⚙️ Inställningar</p>
-                <p class="footer-link" id="fullscreenLink">📱 Fullskärm</p>
+        <!-- Inställningar Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <p id="connectionStatus">Checking Tibber connection...</p>
+                        <label for="tibberClientId">Tibber Client ID:</label>
+                        <input type="text" id="tibberClientId" autocomplete="off" placeholder="Tibber Data API Client ID">
+                        <label for="tibberClientSecret">Tibber Client Secret:</label>
+                        <input type="password" id="tibberClientSecret" autocomplete="new-password" placeholder="Tibber Data API Client Secret">
+                        <small>Credentials are stored locally on this computer, not in browser storage.</small>
+                        <button id="saveTibberConfig" class="btn-save">Save credentials</button>
+                        <a id="connectTibber" class="btn-save" href="/auth/login">Connect Tibber</a>
+                    </div>
+                    <div class="form-group">
+                        <label for="refreshInterval">Refresh interval (seconds):</label>
+                        <input type="number" id="refreshInterval" value="60" min="60" max="3600">
+                    </div>
+                    <button id="saveSettings" class="btn-save">Save interval</button>
+                </div>
             </div>
-        </footer>
+        </div>
+
+        <!-- Laddningsindikator -->
+        <div id="loadingIndicator" class="loading-indicator">
+            <div class="spinner"></div>
+            <p>Loading vehicle data...</p>
+        </div>
+
+        <!-- Felmeddelande -->
+        <div id="errorMessage" class="error-message">
+            <span class="error-icon">⚠️</span>
+            <span id="errorText"></span>
+        </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
-
 </html>

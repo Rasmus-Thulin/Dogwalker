@@ -1,108 +1,45 @@
-# 🐾 Rosie's Promenad Timer
+# HomeScreen
 
-En app för att hålla koll på när det är dags att gå ut med Rosie!
+A portrait-oriented Tesla charging dashboard powered by the [Tibber Data API](https://data-api.tibber.com/docs/). Gullan and Tessan appear together in separate cards with rotatable 3D models, battery level, range and charging status.
 
-## Features
+## Run Locally
 
-- ⏱️ Timer för nästa promenad (5 timmars intervall)
-- 🏆 Highscore för familjemedlemmar
-- 🍖 Matningspåminnelser (morgon & kväll)
-- 🌤️ Väderprognos från din plats
-- 📱 Fullskärmsstöd för mobiler
-
-## Lokal utveckling
+Requires Node.js 20 or later and npm.
 
 ```bash
-npm install
+npm ci
 npm start
 ```
 
-Appen körs då på `http://localhost:3000`
+Open http://localhost:5175/. This app needs its Node server; static hosting alone does not provide the Tibber integration.
 
-## Deploy till Koyeb
+## Connect Tibber
 
-### Steg 1: Pusha till GitHub
+1. Create a client in [Tibber Data API client management](https://data-api.tibber.com/clients/manage/).
+2. Register `http://localhost:5175/` as the callback URL. Grant `openid`, `profile`, `email`, `offline_access`, `data-api-user-read`, `data-api-homes-read`, `data-api-vehicles-read` and `data-api-chargers-read`.
+3. Connect your vehicles to Tibber.
+4. Open **Settings** in HomeScreen on the server computer. Enter your Client ID and Client Secret, then select **Save credentials**.
+5. Select **Connect Tibber** and approve access.
 
-Först, se till att din kod finns på GitHub:
+OAuth uses PKCE. Credentials and tokens are stored locally by the server, not in browser storage or the repository.
 
-```bash
-git add .
-git commit -m "Prepare for Koyeb deployment"
-git push origin main
-```
+## Automatic Updates
 
-### Steg 2: Deploy via Koyeb Dashboard
+Vehicle data is fetched on startup and every 60 seconds by default. Settings can change the interval from 60 to 3,600 seconds. The app also refreshes when the tab becomes visible or the network reconnects.
 
-1. **Skapa ett Koyeb-konto**
-   - Gå till [koyeb.com](https://www.koyeb.com) och skapa ett gratis konto
+Updates preserve the existing 3D players and retain the last successful data during temporary errors. Data freshness depends on when each vehicle reports to Tibber; available metrics depend on the vehicle integration.
 
-2. **Skapa en ny Web Service**
-   - Klicka på "Create Web Service"
-   - Välj "GitHub" som deployment source
-   - Godkänn GitHub-koppling och välj denna repository
+## 3D Models
 
-3. **Konfigurera deployment**
-   - **Name:** `dogwalker` (eller valfritt namn)
-   - **Region:** Välj närmaste region (t.ex. `fra` för Frankfurt)
-   - **Builder:** `Buildpack`
-   - **Build command:** `npm install` (sätts automatiskt)
-   - **Run command:** `npm start` (sätts automatiskt)
-   
-4. **Konfigurera port**
-   - Under "Exposing your service":
-   - **Port:** `3000`
-   - Kryssa i "Publicly accessible"
+The app embeds Sketchfab models using its Viewer API. Internet access is required. Player controls remain visible because hiding them is restricted by Sketchfab account plans.
 
-5. **Deploy!**
-   - Klicka på "Deploy"
-   - Vänta 1-2 minuter medan appen byggs och deployas
-   - Din app kommer att vara tillgänglig på en URL som: `dogwalker-XXXX.koyeb.app`
+- [2021 Tesla Model Y](https://sketchfab.com/models/59e2ead369984b1a85c800ff6cf6789d) by [tonielpro520](https://sketchfab.com/tonielpro520), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The displayed paint is changed to reflective graphite grey.
+- [Tesla Model 3 2024](https://sketchfab.com/models/36c52f3f89f6439c90310f14e8ff33f2) by [brandonleong28](https://sketchfab.com/brandonleong28), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The displayed paint is changed to white.
 
-### Viktiga inställningar:
+## Security
 
-- **Instance type:** `nano` (gratis tier)
-- **Auto-deploy:** På (så att ändringar i GitHub automatiskt deployas)
-- **Port:** `3000` (eller miljövariabeln PORT som Koyeb sätter automatiskt)
-
-### Alternativ: Via Koyeb CLI
-
-```bash
-# Installera Koyeb CLI (macOS)
-brew install koyeb/tap/koyeb-cli
-
-# Eller via curl
-curl -fsSL https://cli.koyeb.com/install.sh | sh
-
-# Logga in
-koyeb login
-
-# Deploy
-koyeb service create dogwalker \
-  --app dogwalker \
-  --git github.com/DITT_ANVÄNDARNAMN/Dogwalker \
-  --git-branch main \
-  --ports 3000:http \
-  --routes /:3000 \
-  --instance-type nano
-```
-
-### Efter deployment
-
-Din app kommer att vara tillgänglig på en URL som:
-`https://dogwalker-XXXX.koyeb.app`
-
-**OBS!** LocalStorage fungerar fortfarande - varje användare får sin egen data lagrad i sin webbläsare.
-
-## Environment Variables
-
-Appen använder följande environment variables:
-
-- `PORT` - Server port (default: 3000, Koyeb sätter detta automatiskt)
-
-## Teknologier
-
-- HTML5
-- CSS3 (Vanilla CSS med gradients och animationer)
-- JavaScript (Vanilla JS)
-- Node.js + Express (för server deployment)
-- Open-Meteo API (för väderprognoser)
+- Client configuration: `~/.homescreen-tibber-config.json`.
+- OAuth tokens: `~/.homescreen-tibber-tokens.json`.
+- Both files are restricted to the server user. The browser does not receive the client secret or OAuth access token.
+- Never commit credentials, tokens or environment files.
+- The server is intended for local use. Do not expose it publicly without authentication and security hardening.

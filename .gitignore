@@ -1,4 +1,22 @@
+# Dependencies
 node_modules/
-npm-debug.log
-.DS_Store
+
+# Environment variables
 .env
+.env.*
+!.env.example
+.tibber-tokens.json
+.homescreen-tibber-config.json
+.homescreen-tibber-tokens.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
