@@ -58,7 +58,7 @@ Updates preserve the existing 3D players and retain the last successful data dur
 
 The app embeds Sketchfab models using its Viewer API. Internet access is required. Player controls remain visible because hiding them is restricted by Sketchfab account plans.
 
-- [2021 Tesla Model Y](https://sketchfab.com/models/59e2ead369984b1a85c800ff6cf6789d) by [tonielpro520](https://sketchfab.com/tonielpro520), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The displayed paint is changed to reflective graphite grey.
+- [2021 Tesla Model Y](https://sketchfab.com/models/59e2ead369984b1a85c800ff6cf6789d) by [tonielpro520](https://sketchfab.com/tonielpro520), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The displayed paint is changed to glossy deep black.
 - [Tesla Model 3 2024](https://sketchfab.com/models/36c52f3f89f6439c90310f14e8ff33f2) by [brandonleong28](https://sketchfab.com/brandonleong28), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The displayed paint is changed to white.
 
 ## Security

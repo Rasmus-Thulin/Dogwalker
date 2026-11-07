@@ -124,7 +124,7 @@ class ChargingDashboard {
         group.userData.baseScale = 0.92;
         group.userData.targetScale = 0.92;
 
-        const paintColor = isModelY ? 0x596164 : 0xe7e9e6;
+        const paintColor = isModelY ? 0x080808 : 0xe7e9e6;
         const bodyMaterial = new THREE.MeshPhysicalMaterial({
             color: paintColor,
             metalness: isModelY ? 0.58 : 0.3,
@@ -499,14 +499,14 @@ class ChargingDashboard {
         const presentation = {
             gullan: {
                 model: 'Tesla Model Y',
-                paint: 'Graphite grey',
+                paint: 'Deep black',
                 sketchfabModelId: '59e2ead369984b1a85c800ff6cf6789d',
                 modelAuthor: 'tonielpro520',
                 license: 'CC BY 4.0',
                 paintClass: 'paint-graphite',
                 paintFinish: 'gloss',
-                lighting: { exposure: 0.7, lightIntensity: 2 },
-                paintColor: [0.07, 0.075, 0.08],
+                lighting: { exposure: 0.65, lightIntensity: 1 },
+                paintColor: [0.004, 0.004, 0.004],
                 paintMaterials: ['Carro_Pintura']
             },
             tessan: {
@@ -719,11 +719,11 @@ class ChargingDashboard {
                             Matcap: { enable: false },
                             RoughnessPBR: { enable: true, factor: 0.22 },
                             GlossinessPBR: { enable: true, factor: 0.78 },
-                            MetalnessPBR: { enable: true, factor: 0.25 },
+                            MetalnessPBR: { enable: true, factor: 0.05 },
                             ClearCoat: { enable: true, factor: 1, reflectivity: 0.5 },
                             ClearCoatRoughness: { enable: true, factor: 0.08 },
                             SpecularHardness: { enable: true, factor: 0.75 },
-                            SpecularColor: { enable: true, factor: 1, color: [0.65, 0.65, 0.65] }
+                            SpecularColor: { enable: true, factor: 1, color: [0.12, 0.12, 0.12] }
                         };
                         Object.entries(finish).forEach(([channelName, settings]) => {
                             if (material.channels[channelName]) Object.assign(material.channels[channelName], settings);
