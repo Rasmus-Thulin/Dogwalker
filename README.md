@@ -48,6 +48,8 @@ The dark glass interface uses translucent panels, subtle edge highlights and a u
 
 The header shows a live clock, animated weather conditions and a six-hour forecast from [Open-Meteo](https://open-meteo.com/). The browser requests the device location on startup and uses Ödåkra when location access is denied, unavailable or times out. Device coordinates are rounded to city-level precision and sent to Open-Meteo for weather and BigDataCloud for the locality name; they are not saved in browser storage. Change the city manually or retry **Use my location** through **Login** in the footer. Weather refreshes every 15 minutes and retains the last successful forecast during temporary errors.
 
+The transit panel shows the next train from Ödåkra station and bus 5 from Ödåkra Jupitergatan toward Helsingborg C. Add a Trafiklab Realtime APIs key as `TRAFIKLAB_API_KEY`. The key stays on the server; departures are shared through a 60-second cache and polling pauses while the display is hidden. Transit data is provided by Trafiklab under CC BY 4.0.
+
 Use **Fullscreen** in the footer to enter or exit fullscreen (Escape also exits). Browsers without the Fullscreen API can use their own fullscreen controls. The display adapts between stacked portrait cards and side-by-side landscape cards. Weather and charging animations respect reduced-motion preferences.
 
 ## Automatic Updates

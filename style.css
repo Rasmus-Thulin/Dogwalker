@@ -2962,3 +2962,29 @@ body {
     .portrait-dashboard { --glass-edge: #ffffff60; }
     .portrait-dashboard .weather-hourly, .portrait-dashboard .vehicle-panel .vehicle-panel-stats { border-color: #ffffff50; }
 }
+
+/* Compact live departures, matching the dark liquid-glass dashboard. */
+.transit-widget { position: relative; overflow: hidden; padding: 22px 26px 17px; border: 1px solid var(--glass-edge, #ffffff20); border-radius: 30px; color: var(--text-primary); background: linear-gradient(145deg, #ffffff12, #ffffff07 55%, #8bb7ff0a); box-shadow: 0 24px 70px #0004, inset 0 1px #ffffff25; -webkit-backdrop-filter: blur(30px) saturate(135%); backdrop-filter: blur(30px) saturate(135%); }
+.transit-widget::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 12% -20%, #a8c9ff1b, transparent 42%); }
+.transit-heading { position: relative; display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
+.transit-kicker { display: block; margin-bottom: 3px; font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; opacity: .62; }
+.transit-heading h2 { font-size: 1.12rem; font-weight: 500; letter-spacing: -.02em; }
+#transitStatus { max-width: 48%; font-size: .64rem; text-align: right; opacity: .58; }
+.transit-routes { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.transit-route { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; padding: 16px 18px; border: 1px solid #ffffff12; border-radius: 21px; background: #05070c35; box-shadow: inset 0 1px #ffffff0e; }
+.transit-badge { display: inline-block; margin-bottom: 8px; padding: 4px 8px; border: 1px solid #ffffff20; border-radius: 999px; font-size: .58rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; background: #ffffff0c; }
+.transit-route h3 { overflow: hidden; font-size: .9rem; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.transit-route > div > p { margin-top: 3px; font-size: .66rem; opacity: .55; }
+.transit-departure { flex: 0 0 auto; text-align: right; }
+.transit-time { display: block; font-size: 2rem; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -.045em; line-height: 1; }
+.transit-detail { white-space: nowrap; }
+.transit-credit { position: relative; display: block; width: max-content; margin: 10px 2px 0 auto; color: inherit; font-size: .55rem; text-decoration: none; opacity: .42; }
+.transit-credit:hover { text-decoration: underline; opacity: .7; }
+.transit-widget.has-error #transitStatus { opacity: .8; }
+@media (max-width: 640px) {
+    .transit-widget { padding: 19px 16px 14px; border-radius: 27px; }
+    .transit-heading { align-items: start; }
+    .transit-routes { grid-template-columns: 1fr; }
+    .transit-route { padding: 14px 16px; }
+    .transit-time { font-size: 1.8rem; }
+}

@@ -8,7 +8,9 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const { createCachedLoader, retryAfterSeconds } = require('./cached-loader');
+const { createTransitService } = require('./transit-service');
 const deviceCache = createCachedLoader(loadDevices);
+const transitService = createTransitService({ apiKey: process.env.TRAFIKLAB_API_KEY || '', fetchImpl: fetch });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5175;
@@ -330,6 +332,17 @@ app.get('/api/devices', async (req, res) => {
             error: status === 429 ? 'Tibber has temporarily paused updates. The dashboard will retry automatically.' : error.message,
             retryAfter
         });
+    }
+});
+
+app.get('/api/transit', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+        const result = await transitService.get();
+        if (result.retryAfter) res.set('Retry-After', String(result.retryAfter));
+        res.json({ ...result.value, stale: result.stale, retryAfter: result.retryAfter });
+    } catch (error) {
+        res.status(error.status || 502).json({ error: error.message, retryAfter: error.retryAfter || 0 });
     }
 });
 

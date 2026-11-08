@@ -15,6 +15,21 @@
             <div id="weatherHourly" class="weather-hourly" aria-label="Hourly forecast"></div>
         </section>
 
+        <section id="transitWidget" class="transit-widget" aria-labelledby="transitTitle">
+            <header class="transit-heading"><div><span class="transit-kicker">Skånetrafiken</span><h2 id="transitTitle">Nästa mot Helsingborg C</h2></div><p id="transitStatus" role="status">Hämtar avgångar…</p></header>
+            <div class="transit-routes">
+                <article id="nextTrain" class="transit-route transit-train">
+                    <div><span class="transit-badge">Tåg</span><h3>Ödåkra station</h3><p>Helsingborg C</p></div>
+                    <div class="transit-departure"><time class="transit-time">—</time><p class="transit-detail">Hämtar…</p></div>
+                </article>
+                <article id="nextBus" class="transit-route transit-bus">
+                    <div><span class="transit-badge">Buss 5</span><h3>Jupitergatan</h3><p>Helsingborg C</p></div>
+                    <div class="transit-departure"><time class="transit-time">—</time><p class="transit-detail">Hämtar…</p></div>
+                </article>
+            </div>
+            <a class="transit-credit" href="https://www.trafiklab.se/" target="_blank" rel="noreferrer">Trafikdata från Trafiklab.se</a>
+        </section>
+
         <main class="garage-board">
             <div id="carsContainer" class="vehicle-panels" aria-label="Vehicle overview"></div>
         </main>
@@ -77,5 +92,6 @@
     <script src="https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js"></script>
     <script type="module" src="app.js"></script>
     <script type="module" src="weather.js"></script>
+    <script type="module" src="transit.js"></script>
 </body>
 </html>
