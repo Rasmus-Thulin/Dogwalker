@@ -2981,6 +2981,42 @@ body {
 .transit-credit { position: relative; display: block; width: max-content; margin: 10px 2px 0 auto; color: inherit; font-size: .55rem; text-decoration: none; opacity: .42; }
 .transit-credit:hover { text-decoration: underline; opacity: .7; }
 .transit-widget.has-error #transitStatus { opacity: .8; }
+.dashboard-top { display: grid; gap: 22px; }
+
+/* Galaxy Tab A7 and similarly sized portrait tablets. */
+@media (min-width: 700px) and (max-width: 1099px) {
+    .portrait-dashboard .container { width: calc(100% - 28px); padding: 14px 0 12px; gap: 14px; }
+    .dashboard-top { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+    .portrait-dashboard .weather-widget { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; padding: 18px 18px 15px; border-radius: 25px; }
+    .weather-current { width: 100%; gap: 12px; padding: 10px 0 14px; }
+    .weather-temperature { font-size: clamp(3rem, 7vw, 4.2rem); }
+    .dashboard-clock { font-size: clamp(2.65rem, 6.5vw, 3.8rem); }
+    .portrait-dashboard .weather-hourly { width: 100%; min-height: 75px; padding: 9px 5px 7px; gap: 2px; border-radius: 18px; }
+    .weather-hourly > div { font-size: .6rem; }
+    .weather-hourly strong { font-size: .76rem; }
+    .forecast-icon { font-size: 1rem; }
+    .transit-widget { display: flex; flex-direction: column; min-width: 0; padding: 18px 15px 13px; border-radius: 25px; }
+    .transit-heading { display: block; margin-bottom: 10px; }
+    .transit-heading h2 { font-size: 1rem; }
+    #transitStatus { max-width: none; margin-top: 4px; text-align: left; }
+    .transit-routes { grid-template-columns: 1fr; gap: 8px; }
+    .transit-route { padding: 11px 12px; border-radius: 17px; }
+    .transit-badge { margin-bottom: 5px; padding: 3px 7px; }
+    .transit-route h3 { font-size: .8rem; }
+    .transit-time { font-size: 1.55rem; }
+    .transit-credit { margin-top: auto; padding-top: 7px; }
+    .vehicle-panels { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .portrait-dashboard .vehicle-panel { min-width: 0; min-height: 330px; border-radius: 25px; }
+    .portrait-dashboard .vehicle-panel-heading { padding: 16px 18px 0; }
+    .portrait-dashboard .vehicle-panel-heading h2 { font-size: 1.05rem; }
+    .vehicle-panel-surface { min-height: 160px; }
+    .portrait-dashboard .vehicle-panel .vehicle-panel-stats { margin: 0 10px; padding: 12px 11px; gap: 10px; border-radius: 18px; }
+    .portrait-dashboard .vehicle-panel .console-stat > span { font-size: .57rem; }
+    .portrait-dashboard .vehicle-panel .console-stat.console-battery > strong { font-size: 1.55rem; }
+    .portrait-dashboard .vehicle-panel .console-stat.console-range > strong { font-size: 1.15rem; }
+    .portrait-dashboard .vehicle-panel-credit { padding: 8px 18px 11px; }
+    .dashboard-footer { padding-bottom: 2px; }
+}
 @media (max-width: 640px) {
     .transit-widget { padding: 19px 16px 14px; border-radius: 27px; }
     .transit-heading { align-items: start; }
