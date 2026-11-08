@@ -1,10 +1,11 @@
 {
   "name": "tesla-dashboard-proxy",
   "version": "1.0.0",
-  "description": "Proxy server för Tesla Dashboard",
+  "description": "Proxy server f\u00f6r Tesla Dashboard",
   "main": "proxy-server.js",
   "scripts": {
-    "start": "node proxy-server.js"
+    "start": "node proxy-server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "cors": "^2.8.5",

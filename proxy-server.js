@@ -7,6 +7,8 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const { createCachedLoader, retryAfterSeconds } = require('./cached-loader');
+const deviceCache = createCachedLoader(loadDevices);
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5175;
@@ -65,6 +67,7 @@ function saveClientConfig(clientId, clientSecret) {
     Object.assign(clientConfig, nextConfig);
 
     if (changed) {
+        deviceCache.reset();
         tokenData = null;
         try {
             fs.unlinkSync(tokenPath);
@@ -102,9 +105,12 @@ async function exchangeRefreshToken(grant) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body
     }).then(async response => {
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
         if (!response.ok || !result.access_token) {
-            throw new Error(result.error_description || result.error || 'Could not refresh the Tibber token. Reconnect your account.');
+            const error = new Error(result.error_description || result.error || 'Could not refresh the Tibber token. Reconnect your account.');
+            error.status = response.ok ? 502 : response.status;
+            error.retryAfter = retryAfterSeconds(response.headers.get('retry-after'));
+            throw error;
         }
 
         saveTokens({
@@ -148,6 +154,12 @@ async function tibberGet(apiPath, retry = true) {
         data = JSON.parse(text);
     } catch {
         data = { error: text || response.statusText };
+    }
+    if (!response.ok) {
+        const error = new Error(data.error || `Tibber request failed (${response.status}).`);
+        error.status = response.status;
+        error.retryAfter = retryAfterSeconds(response.headers.get('retry-after'));
+        throw error;
     }
     return { status: response.status, data };
 }
@@ -227,6 +239,7 @@ async function handleOAuthCallback(req, res) {
             }
             throw new Error(result.error_description || result.error || 'Tibber returnerade ingen giltig token.');
         }
+        deviceCache.reset();
         saveTokens({ ...result, expires_at: Date.now() + (result.expires_in || 3600) * 1000 });
         res.redirect('/?connected=1');
     } catch (callbackError) {
@@ -275,38 +288,48 @@ app.post('/api/auth/config', (req, res) => {
     }
 });
 
-app.get('/api/devices', async (req, res) => {
-    try {
-        const homesResult = await tibberGet('/homes');
-        if (homesResult.status < 200 || homesResult.status >= 300) {
-            return res.status(homesResult.status).json({ error: homesResult.data.error || 'Could not fetch Tibber homes.' });
-        }
-        const homes = getRecords(homesResult.data, ['homes', 'items']);
-        const deviceGroups = await Promise.all(homes.map(async home => {
-            const homeId = home.id || home.homeId;
-            if (!homeId) return [];
-            const result = await tibberGet(`/homes/${encodeURIComponent(homeId)}/devices`);
-            if (result.status < 200 || result.status >= 300) {
-                throw new Error(result.data.error || `Could not fetch devices for home ${home.name || homeId}.`);
-            }
-            const devices = getRecords(result.data, ['devices', 'items']);
-            return Promise.all(devices.map(async device => {
-                const deviceId = device.id || device.deviceId;
-                if (!deviceId) return { ...device, homeName: home.name || home.nickname || 'Tibber-hem' };
-                const details = await tibberGet(`/homes/${encodeURIComponent(homeId)}/devices/${encodeURIComponent(deviceId)}`);
-                if (details.status < 200 || details.status >= 300) {
-                    return { ...device, homeName: home.name || home.nickname || 'Tibber-hem' };
+async function loadDevices() {
+    const homesResult = await tibberGet('/homes');
+    const homes = getRecords(homesResult.data, ['homes', 'items']);
+    const devices = [];
+    // Stop immediately on throttling instead of starting a burst for every home/device.
+    for (const home of homes) {
+        const homeId = home.id || home.homeId;
+        if (!homeId) continue;
+        const result = await tibberGet(`/homes/${encodeURIComponent(homeId)}/devices`);
+        for (const device of getRecords(result.data, ['devices', 'items'])) {
+            const deviceId = device.id || device.deviceId;
+            let details = {};
+            if (deviceId) {
+                try {
+                    const response = await tibberGet(`/homes/${encodeURIComponent(homeId)}/devices/${encodeURIComponent(deviceId)}`);
+                    details = getRecord(response.data, ['device', 'item']);
+                } catch (error) {
+                    // A missing individual device may still be represented by its list entry.
+                    if (error.status !== 404) throw error;
                 }
-                return {
-                    ...device,
-                    ...getRecord(details.data, ['device', 'item']),
-                    homeName: home.name || home.nickname || 'Tibber-hem'
-                };
-            }));
-        }));
-        res.json({ devices: deviceGroups.flat() });
+            }
+            devices.push({ ...device, ...details, homeName: home.name || home.nickname || 'Tibber-hem' });
+        }
+    }
+    return devices;
+}
+
+app.get('/api/devices', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    if (!tokenData?.refresh_token) return res.status(401).json({ error: 'Your Tibber account is not connected.' });
+    try {
+        const result = await deviceCache.get();
+        if (result.retryAfter) res.set('Retry-After', String(result.retryAfter));
+        res.json({ devices: result.value, updatedAt: result.updatedAt, stale: result.stale, retryAfter: result.retryAfter });
     } catch (error) {
-        res.status(error.message.includes('not connected') ? 401 : 502).json({ error: error.message });
+        const status = error.status || (error.message.includes('not connected') ? 401 : 502);
+        const retryAfter = error.retryAfter || 0;
+        if (retryAfter) res.set('Retry-After', String(retryAfter));
+        res.status(status).json({
+            error: status === 429 ? 'Tibber has temporarily paused updates. The dashboard will retry automatically.' : error.message,
+            retryAfter
+        });
     }
 });
 

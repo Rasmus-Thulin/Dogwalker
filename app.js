@@ -8,6 +8,7 @@ class ChargingDashboard {
         this.apiBase = '';
         this.autoRefreshTimer = null;
         this.fetchInProgress = false;
+        this.nextDeviceFetchAt = 0;
         this.vehicles = [];
         this.activeVehicleIndex = 0;
         this.scene = null;
@@ -400,22 +401,23 @@ class ChargingDashboard {
             clearInterval(this.autoRefreshTimer);
         }
         this.autoRefreshTimer = setInterval(() => {
-            this.fetchData();
+            if (!document.hidden) this.fetchData();
         }, this.refreshInterval * 1000);
     }
 
     async fetchData() {
-        if (this.fetchInProgress) return;
+        if (this.fetchInProgress || Date.now() < this.nextDeviceFetchAt) return;
         this.fetchInProgress = true;
         if (this.vehicles.length === 0) this.showLoading();
         this.hideError();
 
         try {
             await this.fetchTibberDevices();
-            this.updateLastUpdatedTime();
         } catch (error) {
+            const delay = Math.max(30, Number(error.retryAfter) || 0);
+            this.nextDeviceFetchAt = Date.now() + delay * 1000;
             if (this.vehicles.length === 0) this.displayDevices([]);
-            this.showError(error.message);
+            this.showError(error.status === 429 ? this.pausedUpdateMessage(this.nextDeviceFetchAt) : error.message);
         } finally {
             this.fetchInProgress = false;
             this.hideLoading();
@@ -446,8 +448,8 @@ class ChargingDashboard {
                     : configurationPrompt);
             }
         } catch (error) {
-            document.getElementById('connectionStatus').textContent = 'Cannot reach the local server.';
-            this.displayDevices([]);
+            document.getElementById('connectionStatus').textContent = 'Cannot reach the server.';
+            if (this.vehicles.length === 0) this.displayDevices([]);
             this.showError('Start the server with npm start and open http://localhost:5175.');
         }
     }
@@ -456,7 +458,10 @@ class ChargingDashboard {
         const response = await fetch(`${this.apiBase}/api/devices`);
         const result = await response.json();
         if (!response.ok) {
-            throw new Error(result.error || `Could not fetch Tibber devices (${response.status}).`);
+            const error = new Error(result.error || `Could not fetch Tibber devices (${response.status}).`);
+            error.status = response.status;
+            error.retryAfter = Number(result.retryAfter) || (response.status === 429 ? 300 : 30);
+            throw error;
         }
 
         const devices = Array.isArray(result.devices) ? result.devices : [];
@@ -467,6 +472,16 @@ class ChargingDashboard {
             throw new Error('No vehicles found. Check your Tibber connections and OAuth vehicle access.');
         }
         this.displayDevices(vehicles);
+        this.lastDataUpdatedAt = Number(result.updatedAt) || Date.now();
+        this.updateLastUpdatedTime(this.lastDataUpdatedAt);
+        this.nextDeviceFetchAt = Date.now() + Math.max(this.refreshInterval, Number(result.retryAfter) || 0) * 1000;
+        if (result.stale) this.showError(this.pausedUpdateMessage(this.nextDeviceFetchAt));
+    }
+
+    pausedUpdateMessage(retryAt) {
+        const format = timestamp => new Date(timestamp).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+        const lastUpdate = this.lastDataUpdatedAt ? ` Showing values from ${format(this.lastDataUpdatedAt)}.` : '';
+        return `Tibber updates paused. Retrying after ${format(retryAt)}.${lastUpdate}`;
     }
 
     formatTibberDevice(device) {
@@ -500,25 +515,26 @@ class ChargingDashboard {
             gullan: {
                 model: 'Tesla Model Y',
                 paint: 'Deep black',
-                sketchfabModelId: '59e2ead369984b1a85c800ff6cf6789d',
-                modelAuthor: 'tonielpro520',
-                license: 'CC BY 4.0',
+                sketchfabModelId: 'e0f703b823e74746b40634d1876f6a13',
+                modelAuthor: 'SQUIR3D',
+                license: 'Editorial',
                 paintClass: 'paint-graphite',
                 paintFinish: 'gloss',
                 lighting: { exposure: 0.65, lightIntensity: 1 },
                 paintColor: [0.004, 0.004, 0.004],
-                paintMaterials: ['Carro_Pintura']
+                paintMaterials: ['body']
             },
             tessan: {
                 model: 'Tesla Model 3',
                 paint: 'White',
-                sketchfabModelId: '36c52f3f89f6439c90310f14e8ff33f2',
-                modelAuthor: 'brandonleong28',
-                license: 'CC BY 4.0',
+                sketchfabModelId: '55daee6824b945bb94f9018197b7949d',
+                modelAuthor: 'codexito',
+                license: 'Standard',
                 paintClass: 'paint-white',
-                cameraHeading: 90,
-                paintColor: [0.95, 0.95, 0.95],
-                paintMaterials: ['Geohoodsub00021Mtl', 'Geohoodsub00031Mtl']
+                cameraHeading: 0,
+                animationPose: { uid: '28893f74d7d94442b043a4935aa7342e', time: 0 },
+                hiddenObjects: ['Box001'],
+                paintMaterials: []
             }
         }[name.toLowerCase()];
         const model = presentation?.model || [info.brand, info.model].filter(Boolean).join(' ').replace(/Model(?=[0-9YXS])/i, 'Model ');
@@ -534,6 +550,8 @@ class ChargingDashboard {
             modelLicense: presentation?.license || '',
             paintClass: presentation?.paintClass || '',
             cameraHeading: presentation?.cameraHeading || 0,
+            animationPose: presentation?.animationPose || null,
+            hiddenObjects: presentation?.hiddenObjects || [],
             paintColor: presentation?.paintColor || null,
             paintFinish: presentation?.paintFinish || '',
             lighting: presentation?.lighting || null,
@@ -639,12 +657,17 @@ class ChargingDashboard {
                         this.applyVehiclePaint(api, vehicle);
                         if (vehicle.lighting) api.setEnvironment(vehicle.lighting);
                         api.setUserInteraction(true);
-                        this.frameVehicle(api, viewer, vehicle);
+                        this.applyVehiclePose(api, vehicle, () => {
+                            this.hideVehicleObjects(api, vehicle, () => {
+                                if (viewer.isConnected) this.frameVehicle(api, viewer, vehicle);
+                            });
+                        });
                     });
                     api.start();
                 },
                 error: retry,
                 autostart: 1,
+                animation_autoplay: 0,
                 transparent: 1,
                 ui_stop: 1,
                 ui_theme: 'dark',
@@ -662,13 +685,41 @@ class ChargingDashboard {
     }
 
     getSketchfabEmbedUrl(modelId) {
-        return `https://sketchfab.com/models/${modelId}/embed?autostart=1&transparent=1&ui_stop=1&ui_theme=dark&ui_controls=1&ui_infos=1&ui_watermark=1&ui_settings=1&ui_fullscreen=1&ui_inspector=1`;
+        return `https://sketchfab.com/models/${modelId}/embed?autostart=1&animation_autoplay=0&transparent=1&ui_stop=1&ui_theme=dark&ui_controls=1&ui_infos=1&ui_watermark=1&ui_settings=1&ui_fullscreen=1&ui_inspector=1`;
+    }
+
+    applyVehiclePose(api, vehicle, onReady) {
+        const pose = vehicle.animationPose;
+        if (!pose) return onReady();
+        api.setCurrentAnimationByUID(pose.uid, animationError => {
+            if (animationError) return onReady();
+            api.pause(pauseError => {
+                if (pauseError) return onReady();
+                api.seekTo(pose.time, () => onReady());
+            });
+        });
+    }
+
+    hideVehicleObjects(api, vehicle, onReady) {
+        if (!vehicle.hiddenObjects?.length) return onReady();
+        api.getNodeMap((error, nodeMap) => {
+            if (error) return onReady();
+            const objects = Object.values(nodeMap).filter(node =>
+                node.type === 'MatrixTransform' && vehicle.hiddenObjects.includes(node.name));
+            if (!objects.length) return onReady();
+            let remaining = objects.length;
+            objects.forEach(node => api.hide(node.instanceID, () => {
+                if (--remaining === 0) onReady();
+            }));
+        });
     }
 
     frameVehicle(api, viewer, vehicle) {
         api.setEnableCameraConstraints(false);
+        const centerCamera = vehicle.hiddenObjects?.length
+            ? api.focusOnVisibleGeometries.bind(api) : api.recenterCamera.bind(api);
         api.setFov(35, () => {
-            api.recenterCamera(error => {
+            centerCamera(error => {
                 if (error) return;
                 api.getCameraLookAt((cameraError, camera) => {
                     if (cameraError) return;
@@ -699,13 +750,14 @@ class ChargingDashboard {
 
     applyVehiclePaint(api, vehicle) {
         if (!vehicle.paintColor || vehicle.paintMaterials.length === 0) return;
+        if (vehicle.paintFinish === 'gloss') api.setShadingStyle('pbr', { type: 'lit' });
         api.getMaterialList((error, materials) => {
             if (error) return;
             materials
                 .filter(material => vehicle.paintMaterials.includes(material.name))
                 .forEach(material => {
                     let changed = false;
-                    ['AlbedoPBR', 'DiffuseColor'].forEach(channelName => {
+                    ['AlbedoPBR', 'DiffusePBR', 'DiffuseColor'].forEach(channelName => {
                         const channel = material.channels[channelName];
                         if (!channel || channel.texture) return;
                         channel.enable = true;
@@ -720,9 +772,10 @@ class ChargingDashboard {
                             RoughnessPBR: { enable: true, factor: 0.22 },
                             GlossinessPBR: { enable: true, factor: 0.78 },
                             MetalnessPBR: { enable: true, factor: 0.05 },
-                            ClearCoat: { enable: true, factor: 1, reflectivity: 0.5 },
+                            ClearCoat: { enable: true, factor: 0.3, reflectivity: 0.15, tint: [1, 1, 1], thickness: 0 },
                             ClearCoatRoughness: { enable: true, factor: 0.08 },
                             SpecularHardness: { enable: true, factor: 0.75 },
+                            SpecularF0: { enable: true, factor: 0.04 },
                             SpecularColor: { enable: true, factor: 1, color: [0.12, 0.12, 0.12] }
                         };
                         Object.entries(finish).forEach(([channelName, settings]) => {
@@ -1030,8 +1083,8 @@ class ChargingDashboard {
         return h > 0 ? `${h}h ${m}m` : `${m}m`;
     }
 
-    updateLastUpdatedTime() {
-        const now = new Date();
+    updateLastUpdatedTime(updatedAt = Date.now()) {
+        const now = new Date(updatedAt);
         const timeString = now.toLocaleTimeString('sv-SE', { 
             hour: '2-digit', 
             minute: '2-digit' 

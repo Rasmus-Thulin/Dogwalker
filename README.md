@@ -44,22 +44,24 @@ For local environment configuration, use `.env.example` as the template for an i
 
 ## Display and weather
 
+The dark glass interface uses translucent panels, subtle edge highlights and a uniform white text palette. Reduced transparency, increased contrast and reduced motion preferences are supported.
+
 The header shows a live clock, animated weather conditions and a six-hour forecast from [Open-Meteo](https://open-meteo.com/). The browser requests the device location on startup and uses Ödåkra when location access is denied, unavailable or times out. Device coordinates are rounded to city-level precision and sent to Open-Meteo for weather and BigDataCloud for the locality name; they are not saved in browser storage. Change the city manually or retry **Use my location** through **Login** in the footer. Weather refreshes every 15 minutes and retains the last successful forecast during temporary errors.
 
 Use **Fullscreen** in the footer to enter or exit fullscreen (Escape also exits). Browsers without the Fullscreen API can use their own fullscreen controls. The display adapts between stacked portrait cards and side-by-side landscape cards. Weather and charging animations respect reduced-motion preferences.
 
 ## Automatic Updates
 
-Vehicle data is fetched on startup and every 60 seconds by default. Settings can change the interval from 60 to 3,600 seconds. The app also refreshes when the tab becomes visible or the network reconnects.
+The browser checks for vehicle data on startup and every 60 seconds by default while visible. The server shares a two-minute snapshot across all clients and permits only one upstream refresh at a time. Settings can change the interval from 60 to 3,600 seconds. The app also refreshes when the tab becomes visible or the network reconnects.
 
-Updates preserve the existing 3D players and retain the last successful data during temporary errors. Data freshness depends on when each vehicle reports to Tibber; available metrics depend on the vehicle integration.
+Updates preserve the existing 3D players and retain the last successful data during temporary errors. A Tibber 429 pauses upstream requests for at least five minutes (longer when `Retry-After` requires it), with exponential backoff for repeated failures. Cached values remain visible with their original update time and the next retry time. Switching back to the iPad app does not bypass this pause. Data freshness depends on when each vehicle reports to Tibber; available metrics depend on the vehicle integration.
 
 ## 3D Models
 
 The app embeds Sketchfab models using its Viewer API. Internet access is required. Player controls remain visible because hiding them is restricted by Sketchfab account plans.
 
-- [2021 Tesla Model Y](https://sketchfab.com/models/59e2ead369984b1a85c800ff6cf6789d) by [tonielpro520](https://sketchfab.com/tonielpro520), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The displayed paint is changed to glossy deep black.
-- [Tesla Model 3 2024](https://sketchfab.com/models/36c52f3f89f6439c90310f14e8ff33f2) by [brandonleong28](https://sketchfab.com/brandonleong28), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The displayed paint is changed to white.
+- [Tesla Model Y 2021](https://sketchfab.com/models/e0f703b823e74746b40634d1876f6a13) by [SQUIR3D](https://sketchfab.com/SQUIR3D), Editorial license (embedded Sketchfab viewer). The displayed paint is changed to glossy deep black.
+- [Tesla Model 3](https://sketchfab.com/models/55daee6824b945bb94f9018197b7949d) by [codexito](https://sketchfab.com/codexito), Standard license (embedded Sketchfab viewer). The original white materials are preserved; the door animation is paused at its closed starting pose and the separate floor object is hidden.
 
 ## Security
 

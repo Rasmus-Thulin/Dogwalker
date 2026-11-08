@@ -2805,3 +2805,160 @@ body {
     .weather-atmosphere *, .weather-atmosphere, .portrait-dashboard .console-battery-track span { animation: none !important; }
 }
 .portrait-dashboard .vehicle-panel .console-details .console-stat:last-child > strong { color: var(--text-primary); }
+
+/* Dark glass surfaces share the same light, edge and depth treatment. */
+.portrait-dashboard {
+    --glass-edge: rgba(255, 255, 255, .14);
+    --glass-surface: rgba(24, 27, 36, .68);
+    --glass-shadow: 0 24px 70px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .15), inset 0 -1px 0 rgba(255, 255, 255, .025);
+    background: #06070b;
+    background-image:
+        radial-gradient(ellipse at 12% 5%, rgba(74, 93, 150, .26), transparent 42%),
+        radial-gradient(ellipse at 94% 42%, rgba(77, 58, 115, .19), transparent 42%),
+        radial-gradient(ellipse at 42% 100%, rgba(29, 67, 83, .14), transparent 48%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+}
+.portrait-dashboard .container { width: min(100% - 48px, 880px); padding: 28px 0 20px; gap: 22px; }
+.portrait-dashboard .weather-widget,
+.portrait-dashboard .vehicle-panel,
+.portrait-dashboard .modal-content {
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--glass-edge);
+    border-radius: 32px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, .065), rgba(255, 255, 255, .012) 55%, rgba(255, 255, 255, .035)), var(--glass-surface);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(32px) saturate(135%);
+    backdrop-filter: blur(32px) saturate(135%);
+}
+.portrait-dashboard .weather-widget::before,
+.portrait-dashboard .vehicle-panel::before {
+    content: '';
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(122deg, rgba(255, 255, 255, .085), transparent 22%, transparent 78%, rgba(184, 201, 255, .035));
+}
+.portrait-dashboard .weather-widget {
+    padding: 26px 32px 22px;
+    background:
+        radial-gradient(ellipse at 50% -35%, rgba(107, 141, 191, .2), transparent 72%),
+        linear-gradient(135deg, rgba(34, 42, 59, .72), rgba(13, 17, 28, .8));
+}
+.portrait-dashboard .weather-widget[data-weather="night"] {
+    background: radial-gradient(ellipse at 65% 0, rgba(72, 80, 143, .18), transparent 65%), rgba(16, 18, 32, .78);
+}
+.portrait-dashboard .weather-widget:is([data-weather="rain"], [data-weather="storm"], [data-weather="fog"]) {
+    background: radial-gradient(ellipse at 50% -30%, rgba(117, 142, 160, .17), transparent 75%), rgba(19, 25, 34, .8);
+}
+.portrait-dashboard .weather-widget[data-weather="sunny"] {
+    background: radial-gradient(ellipse at 75% 0, rgba(166, 142, 91, .13), transparent 65%), rgba(24, 30, 40, .78);
+}
+.portrait-dashboard .weather-widget[data-weather="snow"] {
+    background: radial-gradient(ellipse at 60% 0, rgba(159, 178, 201, .17), transparent 65%), rgba(23, 29, 39, .8);
+}
+.weather-topline { gap: 4px; }
+.weather-topline p { font-size: 1rem; font-weight: 600; }
+.weather-topline time { font-size: .76rem; font-weight: 400; }
+.weather-current { width: min(100%, 580px); gap: 32px; padding: 22px 0 28px; }
+.weather-temperature { font-weight: 200; font-size: clamp(3.7rem, 9vw, 5.5rem); text-shadow: 0 3px 20px #0002; }
+.dashboard-clock { font-weight: 200; font-size: clamp(3rem, 8vw, 5rem); text-shadow: 0 3px 20px #0002; }
+#weatherCondition { font-size: .86rem; font-weight: 500; }
+#weatherHighLow { margin-top: 5px; font-size: .73rem; }
+.weather-orb { opacity: .16; width: 120px; height: 120px; filter: blur(2px); box-shadow: 0 0 65px 20px #cadbff13; }
+[data-weather="night"] .weather-orb { opacity: .24; box-shadow: 0 0 40px #a6b9ff20; }
+.weather-cloud { opacity: .055; }
+@keyframes sun-breathe { to { opacity: .24; transform: scale(1.08); } }
+.portrait-dashboard .weather-hourly {
+    width: min(100%, 650px);
+    padding: 14px 12px 12px;
+    min-height: 94px;
+    border: 1px solid rgba(255, 255, 255, .075);
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff06, #ffffff02);
+    box-shadow: inset 0 1px #ffffff04, 0 4px 15px #0000000a;
+}
+.weather-hourly > div { gap: 4px; font-size: .7rem; }
+.weather-hourly strong { font-size: .9rem; font-weight: 500; }
+.forecast-icon { font-size: 1.22rem; filter: drop-shadow(0 2px 4px #0002); }
+.vehicle-panels { gap: 22px; }
+.portrait-dashboard .vehicle-panel { --vehicle-accent: #f2f2f5; min-height: 360px; transition: border-color 220ms ease, box-shadow 220ms ease; }
+.portrait-dashboard .vehicle-panel:hover { border-color: #ffffff26; box-shadow: 0 28px 80px #0005, inset 0 1px #ffffff2b; }
+.portrait-dashboard .vehicle-panel-heading { padding: 22px 26px 0; }
+.portrait-dashboard .vehicle-panel-heading h2 { font-size: 1.32rem; font-weight: 500; }
+.portrait-dashboard .vehicle-panel-surface { background: radial-gradient(ellipse at 50% 72%, #a9b5d409, transparent 65%); }
+.portrait-dashboard .vehicle-panel .vehicle-panel-stats {
+    margin: 0 18px;
+    padding: 17px 18px 15px;
+    border: 1px solid #ffffff09;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff06, #ffffff02);
+    box-shadow: inset 0 1px #ffffff04;
+    gap: 16px 20px;
+}
+.portrait-dashboard .vehicle-panel-stats::before { display: none; }
+.portrait-dashboard .vehicle-panel .console-stat > span { font-size: .66rem; font-weight: 400; }
+.portrait-dashboard .vehicle-panel .console-stat > strong { font-weight: 500; }
+.portrait-dashboard .vehicle-panel .console-stat.console-battery > strong { font-size: 2rem; font-weight: 400; }
+.portrait-dashboard .vehicle-panel .console-stat.console-range > strong { font-size: 1.45rem; font-weight: 400; }
+.portrait-dashboard .vehicle-panel .console-battery-track {
+    height: 9px;
+    margin: 0;
+    border-color: #ffffff0c;
+    background: #00000040;
+    box-shadow: inset 0 1px 3px #0008, 0 1px #ffffff04;
+}
+.portrait-dashboard .vehicle-panel .console-battery-track span {
+    background: linear-gradient(180deg, #fafcff, #c2cbd8);
+    box-shadow: inset 0 1px #fff9, 0 0 14px #b6c9e72b;
+}
+.portrait-dashboard .vehicle-panel .console-battery-track span::after { opacity: .4; }
+.portrait-dashboard .vehicle-panel-credit { padding: 11px 28px 16px; font-size: .57rem; }
+.dashboard-footer { padding: 0 12px; font-size: .67rem; }
+.portrait-dashboard .text-button { padding: 6px 0; }
+.portrait-dashboard .modal { background: #03050a88; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+.portrait-dashboard .modal-content { background-color: rgba(23, 27, 36, .94); }
+.portrait-dashboard .modal-header { padding: 23px 26px; border-color: #ffffff0c; }
+.portrait-dashboard .modal-header h2 { font-size: 1.35rem; font-weight: 500; }
+.portrait-dashboard .form-group input { background: #080a113f; border-color: #ffffff1a; border-radius: 14px; padding: 13px 15px; }
+.portrait-dashboard .btn-save {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    border: 1px solid #ffffff1c;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #ffffff10, #ffffff07);
+    box-shadow: inset 0 1px #ffffff10, 0 4px 12px #0002;
+    font-size: .86rem;
+    font-weight: 500;
+}
+.portrait-dashboard .btn-save:hover { transform: none; border-color: #ffffff35; background: #ffffff17; }
+.portrait-dashboard .btn-save:active { transform: scale(.98); }
+.portrait-dashboard .error-message { border: 1px solid #ffffff17; background: #151923aa; border-radius: 20px; font-size: .8rem; }
+.portrait-dashboard .empty-state { border: 1px solid #ffffff12; border-radius: 28px; background: #ffffff03; }
+@media (min-width: 1100px) and (orientation: landscape) {
+    .portrait-dashboard .container { width: min(100% - 72px, 1360px); padding-top: 28px; }
+    .portrait-dashboard .vehicle-panel { min-height: 440px; }
+}
+@media (max-width: 600px) {
+    .portrait-dashboard .container { width: calc(100% - 28px); padding-top: 14px; gap: 16px; }
+    .portrait-dashboard .weather-widget { padding: 23px 16px 16px; border-radius: 28px; }
+    .weather-current { gap: 18px; padding: 20px 0 24px; }
+    .vehicle-panels { gap: 16px; }
+    .portrait-dashboard .vehicle-panel { border-radius: 28px; }
+    .portrait-dashboard .vehicle-panel-heading { padding: 18px 22px 0; }
+    .portrait-dashboard .vehicle-panel .vehicle-panel-stats { margin: 0 12px; padding: 15px 14px; gap: 14px 12px; }
+    .portrait-dashboard .vehicle-panel .console-main-stats { gap: 16px; }
+    .portrait-dashboard .weather-hourly { padding-right: 6px; padding-left: 6px; border-radius: 20px; }
+    .dashboard-footer { padding: 0 6px; }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .portrait-dashboard :is(.weather-widget, .vehicle-panel, .modal-content) { background: #161a24; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+    .portrait-dashboard { --glass-edge: #ffffff60; }
+    .portrait-dashboard .weather-hourly, .portrait-dashboard .vehicle-panel .vehicle-panel-stats { border-color: #ffffff50; }
+}
