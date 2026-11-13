@@ -625,13 +625,7 @@ class ChargingDashboard {
         const stats = document.createElement('div');
         stats.className = 'console-stats vehicle-panel-stats';
         this.renderVehicleStats(vehicle, stats);
-        const credit = document.createElement('a');
-        credit.className = 'vehicle-panel-credit';
-        credit.href = `https://sketchfab.com/models/${vehicle.sketchfabModelId}`;
-        credit.target = '_blank';
-        credit.rel = 'noreferrer';
-        credit.textContent = `${vehicle.modelAuthor} · ${vehicle.modelLicense}`;
-        panel.append(heading, surface, stats, credit);
+        panel.append(heading, surface, stats);
         return panel;
     }
 

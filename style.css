@@ -3322,3 +3322,9 @@ body {
     .portrait-dashboard .vehicle-panel-surface { min-height: 30px; }
     .portrait-dashboard .vehicle-panel { grid-template-rows: auto minmax(30px, 1fr) auto auto; }
 }
+
+/* Keep the travel panel and vehicle cards focused on the live information. */
+.transit-heading { justify-content: flex-end; }
+#transitStatus { max-width: 100%; margin: 0; text-align: right; }
+#commuteTraffic:empty { display: none; }
+.portrait-dashboard .vehicle-panel .vehicle-panel-stats { margin-bottom: 12px; }

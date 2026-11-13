@@ -46,7 +46,7 @@ async function refreshCommute() {
         duration.textContent = `${Math.ceil(result.durationSeconds / 60)} min`;
         traffic.textContent = result.stale ? 'Senast hämtad · ej aktuell trafik' : result.delaySeconds >= 60
             ? `Varav ${Math.ceil(result.delaySeconds / 60)} min trafikfördröjning`
-            : 'Med aktuell trafik';
+            : '';
         updated.textContent = `Avresa nu · Hämtad ${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Stockholm', hour: '2-digit', minute: '2-digit' }).format(new Date(result.updatedAt))}`;
     } catch {
         route.hidden = true;
