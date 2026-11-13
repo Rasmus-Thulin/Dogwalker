@@ -58,12 +58,13 @@ The browser checks for vehicle data on startup and every 60 seconds by default w
 
 Updates preserve the existing 3D players and retain the last successful data during temporary errors. A Tibber 429 pauses upstream requests for at least five minutes (longer when `Retry-After` requires it), with exponential backoff for repeated failures. Cached values remain visible with their original update time and the next retry time. Switching back to the iPad app does not bypass this pause. Data freshness depends on when each vehicle reports to Tibber; available metrics depend on the vehicle integration.
 
+The vehicle cards estimate the cost from the current battery level to the charge limit using Tibber's current 15-minute consumption price (including `thirdPartyPrice` when supplied), a 75 kWh usable battery assumption and 90% charging efficiency. This requires the `data-api-prices-read` OAuth scope and reconnecting Tibber after upgrading from an older authorization.
+
 ## 3D Models
 
 The app embeds Sketchfab models using its Viewer API. Internet access is required. Player controls remain visible because hiding them is restricted by Sketchfab account plans.
 
-- [Tesla Model Y 2021](https://sketchfab.com/models/e0f703b823e74746b40634d1876f6a13) by [SQUIR3D](https://sketchfab.com/SQUIR3D), Editorial license (embedded Sketchfab viewer). The displayed paint is changed to glossy deep black.
-- [Tesla Model 3](https://sketchfab.com/models/55daee6824b945bb94f9018197b7949d) by [codexito](https://sketchfab.com/codexito), Standard license (embedded Sketchfab viewer). The original white materials are preserved; the door animation is paused at its closed starting pose and the separate floor object is hidden.
+- [Tesla Model Y 2021](https://sketchfab.com/models/e0f703b823e74746b40634d1876f6a13) by [SQUIR3D](https://sketchfab.com/SQUIR3D), Editorial license (embedded Sketchfab viewer). Used for both vehicles: glossy deep black for Gullan and glossy white for Tessan. Each card retains its own Tibber device and live metrics. Bloom is disabled for the white car to prevent a bright halo around its silhouette.
 
 ## Security
 
@@ -72,3 +73,68 @@ The app embeds Sketchfab models using its Viewer API. Internet access is require
 - Both files are restricted to the server user. The browser does not receive the client secret or OAuth access token.
 - Never commit credentials, tokens or environment files.
 - The server is intended for local use. Do not expose it publicly without authentication and security hardening.
+
+### Children's Outlook calendars
+
+Melwin and Elliot each have a week card below the cars. Configure their published
+Outlook ICS subscription URLs in the server's local `.env` file:
+
+```dotenv
+MELWIN_CALENDAR_ICS_URL=
+ELLIOT_CALENDAR_ICS_URL=
+```
+
+Restart `npm start` after setting these values. Keep subscription URLs private and
+out of version control: anyone holding a published URL can read that calendar.
+The server fetches each calendar at most once every five minutes and returns only
+activities for the requested week, without exposing the subscription URL to the
+browser. Cards refresh automatically and support recurring, edited, cancelled,
+all-day and multi-day events. Times display in Europe/Stockholm. Scroll within a
+day to see additional activities. Outlook publication updates may be delayed.
+
+Team schedules are merged directly into each child's HomeScreen card alongside
+Outlook. `MELWIN_TEAM_CALENDAR_ICS_URL` subscribes to Ödåkra IF P-2015 and
+`ELLIOT_TEAM_CALENDAR_ICS_URL` to Ödåkra IF P-2018 (see `.env.example`). These feeds
+refresh independently every five minutes; a temporary failure of one source does
+not hide events from another. Identical title/start/end combinations appear once.
+This displays team activities in HomeScreen; it does not copy them into Outlook.
+
+### Samsung A7 display
+
+The dashboard requests Screen Wake Lock and reacquires it after returning to the
+page or fullscreen. It retries after interaction and once per minute if the OS
+releases it. The display status is shown in Login & display. On the tablet, serve
+the dashboard over trusted HTTPS: opening `http://<computer-ip>:5175` is not a
+secure context and cannot use Screen Wake Lock. `localhost` only counts as local
+on the device running the browser.
+
+Chrome and Samsung Internet cannot set Android's backlight brightness. For a
+fixed maximum, disable Adaptive brightness in Android Settings > Display and set
+the brightness slider to 100%. For programmatic enforcement, use a native Android
+wrapper or a kiosk browser with brightness controls. Screen Wake Lock prevents
+idle dimming; it does not override Android's brightness or power policy.
+
+### Car commute to IKEA Hubhult
+
+The travel panel also supports driving time from Månskensgatan 20, Ödåkra to
+Älmhultsgatan 2, Malmö (IKEA Hubhult). Set `TOMTOM_API_KEY` in the local `.env`
+file and restart the server. Use a free TomTom account without adding a payment
+method or upgrading to a paid plan; enable Routing and Geocoding/Search access.
+The server resolves the two addresses, requests the fastest car route with
+`traffic=true` and `departAt=now`, and shares one refresh across clients every
+five minutes (at most 8,928 routing calls in a 31-day month of continuous use).
+Check the account's current free quota before activation, including any other
+apps using the key. No Google billing account or paid fallback is used.
+
+Without a key the UI explicitly shows that driving time is not connected. Old
+values are labelled as previously fetched, and errors never display a made-up
+travel estimate. The addresses are sent to TomTom only after a key is configured.
+
+The commute includes a straight traffic strip from Ödåkra to Hubhult. It uses
+`sectionType=traffic` and route geometry from the same routing request, so no
+additional traffic API calls are required. Segment positions are proportional to
+road distance. Blue means no reported traffic problem, orange a reported slowdown,
+and red a major jam, near-stationary traffic (at most 5 km/h), or closure. This is
+an incident-based overview, not a guarantee of traffic coverage on every road.
+Hover/focus affected segments for distance ranges. Hide the strip when traffic
+data is unavailable or stale.

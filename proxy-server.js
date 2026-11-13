@@ -9,6 +9,23 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const { createCachedLoader, retryAfterSeconds } = require('./cached-loader');
 const { createTransitService } = require('./transit-service');
+const { createCommuteService } = require('./commute-service');
+const commuteService = createCommuteService({ apiKey: process.env.TOMTOM_API_KEY || '', fetchImpl: fetch });
+const { getCurrentEnergyPrice } = require('./energy-price');
+const { createCalendarService } = require('./calendar-service');
+const calendarService = createCalendarService({
+    urls: {
+        melwin: [
+            { url: process.env.MELWIN_CALENDAR_ICS_URL, label: 'Outlook' },
+            { url: process.env.MELWIN_TEAM_CALENDAR_ICS_URL, label: 'laget.se' }
+        ],
+        elliot: [
+            { url: process.env.ELLIOT_CALENDAR_ICS_URL, label: 'Outlook' },
+            { url: process.env.ELLIOT_TEAM_CALENDAR_ICS_URL, label: 'laget.se' }
+        ]
+    },
+    fetchImpl: fetch
+});
 const deviceCache = createCachedLoader(loadDevices);
 const transitService = createTransitService({ apiKey: process.env.TRAFIKLAB_API_KEY || '', fetchImpl: fetch });
 
@@ -201,7 +218,7 @@ app.get('/auth/login', (req, res) => {
         client_id: clientConfig.clientId,
         redirect_uri: redirectUri,
         response_type: 'code',
-        scope: 'openid profile email offline_access data-api-user-read data-api-homes-read data-api-vehicles-read data-api-chargers-read',
+        scope: 'openid profile email offline_access data-api-user-read data-api-homes-read data-api-vehicles-read data-api-chargers-read data-api-prices-read',
         state,
         code_challenge: codeChallenge,
         code_challenge_method: 'S256'
@@ -298,6 +315,14 @@ async function loadDevices() {
     for (const home of homes) {
         const homeId = home.id || home.homeId;
         if (!homeId) continue;
+        let currentEnergyPrice = null;
+        try {
+            const priceResult = await tibberGet(`/homes/${encodeURIComponent(homeId)}/prices`);
+            currentEnergyPrice = getCurrentEnergyPrice(priceResult.data);
+        } catch (error) {
+            // Price access is optional and requires a separate OAuth scope.
+            if (error.status !== 403 && error.status !== 404) throw error;
+        }
         const result = await tibberGet(`/homes/${encodeURIComponent(homeId)}/devices`);
         for (const device of getRecords(result.data, ['devices', 'items'])) {
             const deviceId = device.id || device.deviceId;
@@ -311,7 +336,7 @@ async function loadDevices() {
                     if (error.status !== 404) throw error;
                 }
             }
-            devices.push({ ...device, ...details, homeName: home.name || home.nickname || 'Tibber-hem' });
+            devices.push({ ...device, ...details, homeName: home.name || home.nickname || 'Tibber-hem', currentEnergyPrice });
         }
     }
     return devices;
@@ -343,6 +368,35 @@ app.get('/api/transit', async (req, res) => {
         res.json({ ...result.value, stale: result.stale, retryAfter: result.retryAfter });
     } catch (error) {
         res.status(error.status || 502).json({ error: error.message, retryAfter: error.retryAfter || 0 });
+    }
+});
+
+app.get('/api/commute', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+        res.json(await commuteService.get());
+    } catch (error) {
+        // Never pass through upstream URLs or credentials to the client.
+        res.status(error.status || 502).json({ error: 'Kunde inte uppdatera bilrestiden.', retryAfter: error.retryAfter || 0 });
+    }
+});
+
+app.get('/api/calendars/:child', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const { start } = req.query;
+    if (typeof start !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(start)) {
+        return res.status(400).json({ error: 'Ange veckans startdatum.' });
+    }
+    // A UTC window padded by one day covers Stockholm dates across DST changes.
+    const date = new Date(`${start}T00:00:00Z`);
+    if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== start) return res.status(400).json({ error: 'Ogiltigt datum.' });
+    try {
+        const result = await calendarService.get(req.params.child, new Date(date.getTime() - 86400000), new Date(date.getTime() + 8 * 86400000));
+        if (!result) return res.status(404).json({ error: 'Kalendern finns inte.' });
+        res.json(result);
+    } catch {
+        // Upstream exceptions may contain the private subscription URL.
+        res.status(502).json({ error: 'Kunde inte uppdatera Outlook-kalendern.' });
     }
 });
 

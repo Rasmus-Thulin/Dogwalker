@@ -1,7 +1,7 @@
 {
   "name": "tesla-dashboard-proxy",
   "version": "1.0.0",
-  "description": "Proxy server f\u00f6r Tesla Dashboard",
+  "description": "Proxy server för Tesla Dashboard",
   "main": "proxy-server.js",
   "scripts": {
     "start": "node proxy-server.js",
@@ -12,6 +12,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.18.2",
     "node-fetch": "^2.7.0",
+    "node-ical": "^0.27.6",
     "three": "^0.187.0"
   }
 }

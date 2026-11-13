@@ -522,19 +522,23 @@ class ChargingDashboard {
                 paintFinish: 'gloss',
                 lighting: { exposure: 0.65, lightIntensity: 1 },
                 paintColor: [0.004, 0.004, 0.004],
-                paintMaterials: ['body']
+                paintMaterials: ['body'],
+                batteryCapacityKwh: 75
             },
             tessan: {
-                model: 'Tesla Model 3',
+                model: 'Tesla Model Y',
                 paint: 'White',
-                sketchfabModelId: '55daee6824b945bb94f9018197b7949d',
-                modelAuthor: 'codexito',
-                license: 'Standard',
+                sketchfabModelId: 'e0f703b823e74746b40634d1876f6a13',
+                modelAuthor: 'SQUIR3D',
+                license: 'Editorial',
                 paintClass: 'paint-white',
-                cameraHeading: 0,
-                animationPose: { uid: '28893f74d7d94442b043a4935aa7342e', time: 0 },
-                hiddenObjects: ['Box001'],
-                paintMaterials: []
+                paintFinish: 'high-gloss',
+                lighting: { exposure: 0.38, lightIntensity: 0.65 },
+                paintColor: [0.8, 0.8, 0.8],
+                // Bloom spills the bright white paint beyond the car silhouette.
+                postProcessing: { bloomEnable: false },
+                paintMaterials: ['body'],
+                batteryCapacityKwh: 75
             }
         }[name.toLowerCase()];
         const model = presentation?.model || [info.brand, info.model].filter(Boolean).join(' ').replace(/Model(?=[0-9YXS])/i, 'Model ');
@@ -555,7 +559,10 @@ class ChargingDashboard {
             paintColor: presentation?.paintColor || null,
             paintFinish: presentation?.paintFinish || '',
             lighting: presentation?.lighting || null,
+            postProcessing: presentation?.postProcessing || null,
             paintMaterials: presentation?.paintMaterials || [],
+            batteryCapacityKwh: presentation?.batteryCapacityKwh || null,
+            currentEnergyPrice: device.currentEnergyPrice || null,
             homeName: device.homeName || '',
             metrics,
             lastSeen: device.status?.lastSeen || null
@@ -656,6 +663,7 @@ class ChargingDashboard {
                         if (!viewer.isConnected) return;
                         this.applyVehiclePaint(api, vehicle);
                         if (vehicle.lighting) api.setEnvironment(vehicle.lighting);
+                        if (vehicle.postProcessing) api.setPostProcessing(vehicle.postProcessing);
                         api.setUserInteraction(true);
                         this.applyVehiclePose(api, vehicle, () => {
                             this.hideVehicleObjects(api, vehicle, () => {
@@ -750,7 +758,9 @@ class ChargingDashboard {
 
     applyVehiclePaint(api, vehicle) {
         if (!vehicle.paintColor || vehicle.paintMaterials.length === 0) return;
-        if (vehicle.paintFinish === 'gloss') api.setShadingStyle('pbr', { type: 'lit' });
+        const reflective = vehicle.paintFinish === 'high-gloss';
+        const glossy = reflective || vehicle.paintFinish === 'gloss';
+        if (glossy) api.setShadingStyle('pbr', { type: 'lit' });
         api.getMaterialList((error, materials) => {
             if (error) return;
             materials
@@ -764,16 +774,16 @@ class ChargingDashboard {
                         channel.color = [...vehicle.paintColor];
                         changed = true;
                     });
-                    if (vehicle.paintFinish === 'gloss') {
+                    if (glossy) {
                         material.shadeless = false;
-                        material.reflection = 0.45;
+                        material.reflection = reflective ? 0.8 : 0.45;
                         const finish = {
                             Matcap: { enable: false },
-                            RoughnessPBR: { enable: true, factor: 0.22 },
-                            GlossinessPBR: { enable: true, factor: 0.78 },
+                            RoughnessPBR: { enable: true, factor: reflective ? 0.12 : 0.22 },
+                            GlossinessPBR: { enable: true, factor: reflective ? 0.88 : 0.78 },
                             MetalnessPBR: { enable: true, factor: 0.05 },
-                            ClearCoat: { enable: true, factor: 0.3, reflectivity: 0.15, tint: [1, 1, 1], thickness: 0 },
-                            ClearCoatRoughness: { enable: true, factor: 0.08 },
+                            ClearCoat: { enable: true, factor: reflective ? 0.8 : 0.3, reflectivity: reflective ? 0.3 : 0.15, tint: [1, 1, 1], thickness: 0 },
+                            ClearCoatRoughness: { enable: true, factor: reflective ? 0.035 : 0.08 },
                             SpecularHardness: { enable: true, factor: 0.75 },
                             SpecularF0: { enable: true, factor: 0.04 },
                             SpecularColor: { enable: true, factor: 1, color: [0.12, 0.12, 0.12] }
@@ -796,6 +806,7 @@ class ChargingDashboard {
         const power = vehicle.metrics.find(metric => /power flow to vehicle battery/i.test(metric.label));
         const statusMetric = vehicle.metrics.find(metric => /vehicle charging status|charging status|charging state/i.test(metric.label));
         const rawStatus = String(statusMetric?.value || '').toLowerCase();
+        const costEstimate = this.estimateChargeCost(vehicle, battery, target);
 
         const mainStats = document.createElement('div');
         mainStats.className = 'console-main-stats';
@@ -807,7 +818,8 @@ class ChargingDashboard {
         const details = document.createElement('div');
         details.className = 'console-details';
         details.append(
-            this.createConsoleStat(target ? 'Charge limit' : 'Charge power', target ? `${target.value}%` : power ? `${power.value} ${power.unit}` : '–', '')
+            this.createConsoleStat(target ? 'Charge limit' : 'Charge power', target ? `${target.value}%` : power ? `${power.value} ${power.unit}` : '–', ''),
+            this.createConsoleStat('Est. cost to limit', costEstimate || '–', 'console-charge-cost')
         );
 
         const batteryTrack = document.createElement('div');
@@ -829,6 +841,18 @@ class ChargingDashboard {
         }
         batteryTrack.appendChild(fill);
         stats.append(mainStats, batteryTrack, details);
+    }
+
+    estimateChargeCost(vehicle, battery, target) {
+        const current = Number(battery?.value);
+        const limit = Number(target?.value);
+        const capacity = Number(vehicle.batteryCapacityKwh);
+        const price = Number(vehicle.currentEnergyPrice?.perKwh);
+        if (![current, limit, capacity, price].every(Number.isFinite) || limit <= current || price < 0) return '';
+        const gridEnergy = capacity * ((limit - current) / 100) / 0.9;
+        const cost = gridEnergy * price;
+        const currency = vehicle.currentEnergyPrice.currency === 'SEK' ? 'kr' : vehicle.currentEnergyPrice.currency;
+        return `≈ ${cost.toLocaleString('sv-SE', { maximumFractionDigits: 0 })} ${currency}`;
     }
 
     createConsoleStat(labelText, valueText, className = '') {

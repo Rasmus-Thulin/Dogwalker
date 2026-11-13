@@ -59,3 +59,12 @@ test('stale server data keeps the vehicles and displays the actual snapshot time
     await instance.fetchData();
     assert.equal(calls, 1);
 });
+
+test('estimates charging cost from battery gap, efficiency and current energy price', () => {
+    const { instance } = dashboard();
+    const cost = instance.estimateChargeCost({
+        batteryCapacityKwh: 75,
+        currentEnergyPrice: { perKwh: 2, currency: 'SEK' }
+    }, { value: 50 }, { value: 80 });
+    assert.equal(cost, '≈ 50 kr');
+});

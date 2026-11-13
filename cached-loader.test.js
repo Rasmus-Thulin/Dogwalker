@@ -136,17 +136,17 @@ test('devices endpoint coalesces clients, stops a detail burst on 429 and serves
     const handler = routes.get('/api/devices');
     const a = response(), b = response();
     await Promise.all([handler({}, a), handler({}, b)]);
-    assert.equal(calls.length, 4);
+    assert.equal(calls.length, 5); // homes, prices, device list and two details.
     assert.equal(a.body.devices.length, 2);
     assert.deepEqual(a.body, b.body);
     time += 120001;
     failDetails = true;
     const stale = response();
     await handler({}, stale);
-    assert.equal(calls.length, 7); // homes, list, first detail; second detail is never called.
+    assert.equal(calls.length, 9); // homes, prices, list, first detail; second detail is never called.
     assert.equal(stale.body.stale, true);
     assert.equal(stale.body.updatedAt, a.body.updatedAt);
     assert.equal(stale.headers['Retry-After'], '600');
     await handler({}, response());
-    assert.equal(calls.length, 7);
+    assert.equal(calls.length, 9);
 });
