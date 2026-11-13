@@ -472,6 +472,9 @@ class ChargingDashboard {
             throw new Error('No vehicles found. Check your Tibber connections and OAuth vehicle access.');
         }
         this.displayDevices(vehicles);
+        if (vehicles.some(vehicle => vehicle.energyPriceStatus === 'scope-required')) {
+            document.getElementById('connectionStatus').textContent = 'Bilarna är anslutna. Återanslut Tibber för att ge tillgång till aktuellt elpris och laddkostnad.';
+        }
         this.lastDataUpdatedAt = Number(result.updatedAt) || Date.now();
         this.updateLastUpdatedTime(this.lastDataUpdatedAt);
         this.nextDeviceFetchAt = Date.now() + Math.max(this.refreshInterval, Number(result.retryAfter) || 0) * 1000;
@@ -523,7 +526,8 @@ class ChargingDashboard {
                 lighting: { exposure: 0.65, lightIntensity: 1 },
                 paintColor: [0.004, 0.004, 0.004],
                 paintMaterials: ['body'],
-                batteryCapacityKwh: 75
+                batteryCapacityKwh: 75,
+                batteryModel: 'Model Y LR 2021'
             },
             tessan: {
                 model: 'Tesla Model Y',
@@ -538,7 +542,8 @@ class ChargingDashboard {
                 // Bloom spills the bright white paint beyond the car silhouette.
                 postProcessing: { bloomEnable: false },
                 paintMaterials: ['body'],
-                batteryCapacityKwh: 75
+                batteryCapacityKwh: 50,
+                batteryModel: 'Model 3 SR 2020'
             }
         }[name.toLowerCase()];
         const model = presentation?.model || [info.brand, info.model].filter(Boolean).join(' ').replace(/Model(?=[0-9YXS])/i, 'Model ');
@@ -562,6 +567,8 @@ class ChargingDashboard {
             postProcessing: presentation?.postProcessing || null,
             paintMaterials: presentation?.paintMaterials || [],
             batteryCapacityKwh: presentation?.batteryCapacityKwh || null,
+            batteryModel: presentation?.batteryModel || '',
+            energyPriceStatus: device.energyPriceStatus || 'unavailable',
             currentEnergyPrice: device.currentEnergyPrice || null,
             homeName: device.homeName || '',
             metrics,
@@ -813,8 +820,15 @@ class ChargingDashboard {
         details.className = 'console-details';
         details.append(
             this.createConsoleStat(target ? 'Charge limit' : 'Charge power', target ? `${target.value}%` : power ? `${power.value} ${power.unit}` : '–', ''),
-            this.createConsoleStat('Est. cost to limit', costEstimate || '–', 'console-charge-cost')
+            this.createConsoleStat('Till laddgräns', costEstimate || (vehicle.energyPriceStatus === 'scope-required' ? 'Anslut elpris' : 'Elpris saknas'), 'console-charge-cost')
         );
+
+        const costStat = details.querySelector('.console-charge-cost');
+        costStat.title = costEstimate
+            ? `${vehicle.batteryModel}: cirka ${vehicle.batteryCapacityKwh} kWh användbart batteri. ${vehicle.currentEnergyPrice.perKwh.toLocaleString('sv-SE', { maximumFractionDigits: 3 })} ${vehicle.currentEnergyPrice.currency}/kWh just nu, inklusive tillgängliga nätavgifter. Cirka 10 % laddförlust. Uppskattning med nuvarande pris för hela återstående laddningen.`
+            : vehicle.energyPriceStatus === 'scope-required'
+                ? 'Öppna Login och återanslut Tibber för att ge tillgång till aktuellt elpris.'
+                : 'Tibber har inte lämnat ett aktuellt elpris. Ingen kostnad gissas.';
 
         const batteryTrack = document.createElement('div');
         batteryTrack.className = 'console-battery-track';
@@ -838,14 +852,16 @@ class ChargingDashboard {
     }
 
     estimateChargeCost(vehicle, battery, target) {
-        const current = Number(battery?.value);
-        const limit = Number(target?.value);
+        if (battery?.value == null || target?.value == null || vehicle.currentEnergyPrice?.perKwh == null) return '';
+        const current = Number(battery.value);
+        const limit = Number(target.value);
         const capacity = Number(vehicle.batteryCapacityKwh);
-        const price = Number(vehicle.currentEnergyPrice?.perKwh);
-        if (![current, limit, capacity, price].every(Number.isFinite) || limit <= current || price < 0) return '';
-        const gridEnergy = capacity * ((limit - current) / 100) / 0.9;
+        const price = Number(vehicle.currentEnergyPrice.perKwh);
+        if (![current, limit, capacity, price].every(Number.isFinite) || capacity <= 0 || current < 0 || current > 100 || limit < 0 || limit > 100) return '';
+        const gridEnergy = capacity * (Math.max(0, limit - current) / 100) / 0.9;
         const cost = gridEnergy * price;
-        const currency = vehicle.currentEnergyPrice.currency === 'SEK' ? 'kr' : vehicle.currentEnergyPrice.currency;
+        const currencyCode = vehicle.currentEnergyPrice.currency || 'SEK';
+        const currency = currencyCode === 'SEK' ? 'kr' : currencyCode;
         return `≈ ${cost.toLocaleString('sv-SE', { maximumFractionDigits: 0 })} ${currency}`;
     }
 

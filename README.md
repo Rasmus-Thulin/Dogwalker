@@ -58,7 +58,7 @@ The browser checks for vehicle data on startup and every 60 seconds by default w
 
 Updates preserve the existing 3D players and retain the last successful data during temporary errors. A Tibber 429 pauses upstream requests for at least five minutes (longer when `Retry-After` requires it), with exponential backoff for repeated failures. Cached values remain visible with their original update time and the next retry time. Switching back to the iPad app does not bypass this pause. Data freshness depends on when each vehicle reports to Tibber; available metrics depend on the vehicle integration.
 
-The vehicle cards estimate the cost from the current battery level to the charge limit using Tibber's current 15-minute consumption price (including `thirdPartyPrice` when supplied), a 75 kWh usable battery assumption and 90% charging efficiency. This requires the `data-api-prices-read` OAuth scope and reconnecting Tibber after upgrading from an older authorization.
+The vehicle cards estimate the cost from the current battery level to the charge limit using Tibber's current 15-minute consumption price (including `thirdPartyPrice` when supplied), estimated usable battery capacities of 50 kWh for Tessan (Model 3 SR 2020) and 75 kWh for Gullan (Model Y LR 2021), and 90% charging efficiency. These are approximate capacities, not measured battery health; Tessan continues to use the requested white Model Y visual. This requires the `data-api-prices-read` OAuth scope and reconnecting Tibber after upgrading from an older authorization.
 
 ## 3D Models
 

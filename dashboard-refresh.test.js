@@ -68,3 +68,19 @@ test('estimates charging cost from battery gap, efficiency and current energy pr
     }, { value: 50 }, { value: 80 });
     assert.equal(cost, '≈ 50 kr');
 });
+
+test('charging cost uses each real car battery and handles reached limit, negative prices and missing data', () => {
+    const { instance } = dashboard();
+    delete instance.formatTibberDevice;
+    const price = { perKwh: 2, currency: 'SEK' };
+    const tessan = instance.formatTibberDevice({ name: 'Tessan', capabilities: [], currentEnergyPrice: price });
+    const gullan = instance.formatTibberDevice({ name: 'Gullan', capabilities: [], currentEnergyPrice: price });
+    assert.equal(tessan.batteryCapacityKwh, 50);
+    assert.equal(gullan.batteryCapacityKwh, 75);
+    assert.equal(instance.estimateChargeCost(tessan, { value: 50 }, { value: 80 }), '≈ 33 kr');
+    assert.equal(instance.estimateChargeCost(gullan, { value: 50 }, { value: 80 }), '≈ 50 kr');
+    assert.equal(instance.estimateChargeCost(tessan, { value: 90 }, { value: 80 }), '≈ 0 kr');
+    assert.equal(instance.estimateChargeCost({ ...tessan, currentEnergyPrice: { perKwh: -1, currency: 'SEK' } }, { value: 50 }, { value: 80 }), '≈ −17 kr');
+    assert.equal(instance.estimateChargeCost(tessan, { value: null }, { value: 80 }), '');
+    assert.equal(instance.estimateChargeCost({ ...tessan, currentEnergyPrice: null }, { value: 50 }, { value: 80 }), '');
+});

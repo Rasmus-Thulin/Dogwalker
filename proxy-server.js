@@ -177,6 +177,8 @@ async function tibberGet(apiPath, retry = true) {
     if (!response.ok) {
         const error = new Error(data.error || `Tibber request failed (${response.status}).`);
         error.status = response.status;
+        error.type = data.type;
+        error.detail = data.detail;
         error.retryAfter = retryAfterSeconds(response.headers.get('retry-after'));
         throw error;
     }
@@ -316,12 +318,16 @@ async function loadDevices() {
         const homeId = home.id || home.homeId;
         if (!homeId) continue;
         let currentEnergyPrice = null;
+        let energyPriceStatus = 'unavailable';
         try {
-            const priceResult = await tibberGet(`/homes/${encodeURIComponent(homeId)}/prices`);
+            const since = new Date(Math.floor(Date.now() / 900000) * 900000).toISOString();
+            const priceResult = await tibberGet(`/homes/${encodeURIComponent(homeId)}/prices?since=${encodeURIComponent(since)}`);
             currentEnergyPrice = getCurrentEnergyPrice(priceResult.data);
+            energyPriceStatus = currentEnergyPrice ? 'available' : 'no-current-price';
         } catch (error) {
             // Price access is optional and requires a separate OAuth scope.
             if (error.status !== 403 && error.status !== 404) throw error;
+            if (error.status === 403 && /scope/i.test(error.detail || '')) energyPriceStatus = 'scope-required';
         }
         const result = await tibberGet(`/homes/${encodeURIComponent(homeId)}/devices`);
         for (const device of getRecords(result.data, ['devices', 'items'])) {
@@ -336,7 +342,7 @@ async function loadDevices() {
                     if (error.status !== 404) throw error;
                 }
             }
-            devices.push({ ...device, ...details, homeName: home.name || home.nickname || 'Tibber-hem', currentEnergyPrice });
+            devices.push({ ...device, ...details, homeName: home.name || home.nickname || 'Tibber-hem', currentEnergyPrice, energyPriceStatus });
         }
     }
     return devices;
