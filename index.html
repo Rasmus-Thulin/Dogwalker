@@ -36,30 +36,32 @@
         <section id="transitWidget" class="transit-widget" aria-label="Avgångar och bilrestid">
             <header class="transit-heading"><p id="transitStatus" role="status">Hämtar avgångar…</p></header>
             <div class="transit-routes">
-                <article id="nextTrain" class="transit-route transit-train">
-                    <div><span class="transit-badge">Tåg</span><h3>Ödåkra station</h3><p>Helsingborg C</p></div>
+                <article id="nextTrain" class="transit-route transit-train journey-card" aria-label="Öresundståg från Ödåkra till Helsingborg C">
+                    <div><span class="transit-badge" aria-label="Linje">—</span><h3>Ödåkra station</h3></div>
                     <div class="transit-departure"><time class="transit-time">—</time><p class="transit-detail">Hämtar…</p></div>
                 </article>
-                <article id="nextBus" class="transit-route transit-bus">
-                    <div><span class="transit-badge">Buss 5</span><h3>Jupitergatan</h3><p>Helsingborg C</p></div>
+                <article id="nextBus" class="transit-route transit-bus journey-card" aria-label="Skånetrafiken linje 5 från Jupitergatan till Helsingborg C">
+                    <div><span class="transit-badge" aria-label="Linje">5</span><h3>Jupitergatan</h3></div>
                     <div class="transit-departure"><time class="transit-time">—</time><p class="transit-detail">Hämtar…</p></div>
                 </article>
             </div>
-            <article id="carCommute" class="car-commute" aria-label="Bilrestid till IKEA Hubhult">
-                <div class="commute-destination"><span class="transit-badge">Bil</span><h3>IKEA Hubhult</h3></div>
-                <div class="commute-estimate"><strong id="commuteDuration">—</strong><p id="commuteTraffic" role="status">Hämtar bilrestid…</p></div>
-                <div id="commuteRoute" class="commute-route" hidden>
-                    <div id="commuteTrafficLine" class="commute-traffic-line" role="img" aria-label="Trafik längs bilrutten"></div>
+            <article id="carCommute" class="car-commute journey-card" aria-label="Bilrestid till IKEA Hubhult">
+                <div class="commute-destination"><h3>IKEA Hubhult</h3></div>
+                <div class="commute-estimate"><strong id="commuteDuration">—</strong><p id="commuteTraffic" role="status">Hämtar…</p></div>
+                <div id="commuteRoute" class="commute-route journey-route" hidden>
+                    <div id="commuteTrafficLine" class="commute-traffic-line journey-track" role="img" aria-label="Trafik längs bilrutten"></div>
                     <div class="commute-route-labels"><span>Ödåkra</span><span>Hubhult</span></div>
                 </div>
-                <p id="commuteUpdated" class="commute-updated"></p>
-                <a class="commute-credit" href="https://www.tomtom.com/products/routing-apis/" target="_blank" rel="noreferrer">Trafikdata: TomTom</a>
             </article>
-            <article class="jula-commute" aria-label="Bilrestid från Månskensgatan 20 till Jula Hyllinge">
-                <div><span class="transit-badge">Bil</span><h3>Jula Hyllinge</h3></div>
-                <div><strong id="julaDuration">—</strong><p id="julaStatus" role="status">Hämtar bilrestid…</p></div>
+            <article id="julaCommute" class="car-commute journey-card" aria-label="Bilrestid från Månskensgatan 20 till Jula Hyllinge">
+                <div class="commute-destination"><h3>Jula Hyllinge</h3></div>
+                <div class="commute-estimate"><strong id="julaDuration">—</strong><p id="julaStatus" role="status">Hämtar…</p></div>
+                <div id="julaRoute" class="commute-route journey-route" hidden>
+                    <div id="julaTrafficLine" class="commute-traffic-line journey-track" role="img" aria-label="Trafik längs bilrutten"></div>
+                    <div class="commute-route-labels"><span>Ödåkra</span><span>Jula Hyllinge</span></div>
+                </div>
             </article>
-            <a class="transit-credit" href="https://www.trafiklab.se/" target="_blank" rel="noreferrer">Trafikdata från Trafiklab.se</a>
+            <div class="travel-credits"><a href="https://www.trafiklab.se/" target="_blank" rel="noreferrer">Trafiklab</a><a href="https://www.tomtom.com/products/routing-apis/" target="_blank" rel="noreferrer">TomTom</a></div>
         </section>
         </div>
 

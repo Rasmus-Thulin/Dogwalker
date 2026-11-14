@@ -1,3 +1,4 @@
+import { reportTravelUpdate } from './travel-status.js';
 const widget = document.getElementById('transitWidget');
 const status = document.getElementById('transitStatus');
 const routes = {
@@ -19,11 +20,11 @@ function renderJourney(type, journey) {
     if (!journey) {
         departure.textContent = '—';
         detail.textContent = 'Ingen avgång nästa timme';
-        badge.textContent = type === 'train' ? 'Tåg' : 'Buss 5';
+        badge.textContent = type === 'train' ? '—' : '5';
         return;
     }
     departure.textContent = time(journey.departure);
-    badge.textContent = type === 'train' ? `Tåg${journey.line ? ` ${journey.line}` : ''}` : `Buss ${journey.line || '5'}`;
+    badge.textContent = journey.line || (type === 'bus' ? '5' : '—');
     const extras = [];
     if (journey.platform) extras.push(`läge ${journey.platform}`);
     if (journey.delay > 0) extras.push(`+${Math.ceil(journey.delay / 60)} min`);
@@ -40,10 +41,10 @@ async function refreshTransit() {
         const journeys = new Map((result.journeys || []).filter(Boolean).map(journey => [journey.type, journey]));
         renderJourney('train', journeys.get('train'));
         renderJourney('bus', journeys.get('bus'));
-        status.textContent = result.stale ? 'Visar senast hämtade tider' : `Uppdaterad ${time(result.updatedAt)}`;
+        reportTravelUpdate('transit', result.updatedAt, result.stale);
         widget.classList.remove('has-error');
     } catch (error) {
-        status.textContent = error.message;
+        reportTravelUpdate('transit', NaN, true);
         widget.classList.add('has-error');
     }
 }

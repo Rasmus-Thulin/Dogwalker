@@ -145,3 +145,11 @@ the existing TomTom key, a separate five-minute cache and independent error
 handling. With both routes active, continuous use makes at most 17,856 routing
 calls in a 31-day month, plus address lookups on server startup. No paid fallback
 is enabled. The compact tablet layout includes this route alongside Hubhult.
+
+Travel cards use four original generated vehicle sketches (Öresundståg, green
+Skånetrafiken bus, white Tesla for Hubhult and black Tesla for Jula). Prompts and
+asset provenance are in `assets/travel/PROMPTS.md`. Both car routes share one
+renderer and the same layout. The oldest fetched timestamp across the travel
+sources appears once in the panel header, with a stale label on failures. Blue
+car route lines show start/end markers; train and bus cards have no route line; these markers do not imply intermediate
+stops. Car traffic slowdowns retain orange/red segments.
