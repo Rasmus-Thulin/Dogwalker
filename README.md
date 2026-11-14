@@ -150,7 +150,7 @@ Travel cards use four original generated vehicle sketches (Öresundståg, green
 Skånetrafiken bus, white Tesla for Hubhult and black Tesla for Jula). Prompts and
 asset provenance are in `assets/travel/PROMPTS.md`. Both car routes share one
 renderer and the same layout. The oldest fetched timestamp across the travel
-sources appears once in the panel header, with a stale label on failures. Blue
+sources appears once in the panel’s lower right corner, with a stale label on failures. Blue
 car route lines show start/end markers; train and bus cards have no route line; these markers do not imply intermediate
 stops. Car traffic slowdowns retain orange/red segments.
 
@@ -158,3 +158,12 @@ The 3D stages use a bounded height instead of expanding to fill free screen
 space. Tablet layouts prioritize the live overview and travel cards, with larger
 times and values. Both Sketchfab viewers explicitly disable automatic spinning
 and initialize to the same front three-quarter view on each page load.
+
+Train and bus cards center three rows: stop/mode, departure time and timetable
+status or signed deviation. Provider attribution lives in the page footer. Camera
+framing waits for Sketchfab’s recenter animation to complete before applying the
+front three-quarter view, so the recenter operation cannot overwrite the zoom.
+
+The vehicle camera is zoomed closer in the compact stage, with a small vertical
+screen offset that visually places the tires against the information panel’s
+upper edge. Model playback is paused on load to keep the default pose stable.

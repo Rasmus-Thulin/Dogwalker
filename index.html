@@ -34,14 +34,13 @@
         </div>
 
         <section id="transitWidget" class="transit-widget" aria-label="Avgångar och bilrestid">
-            <header class="transit-heading"><p id="transitStatus" role="status">Hämtar avgångar…</p></header>
             <div class="transit-routes">
                 <article id="nextTrain" class="transit-route transit-train journey-card" aria-label="Öresundståg från Ödåkra till Helsingborg C">
-                    <div><span class="transit-badge" aria-label="Linje">—</span><h3>Ödåkra station</h3></div>
+                    <div><h3>Ödåkra (Tåg)</h3></div>
                     <div class="transit-departure"><time class="transit-time">—</time><p class="transit-detail">Hämtar…</p></div>
                 </article>
                 <article id="nextBus" class="transit-route transit-bus journey-card" aria-label="Skånetrafiken linje 5 från Jupitergatan till Helsingborg C">
-                    <div><span class="transit-badge" aria-label="Linje">5</span><h3>Jupitergatan</h3></div>
+                    <div><h3>Jupitergatan (Buss 5)</h3></div>
                     <div class="transit-departure"><time class="transit-time">—</time><p class="transit-detail">Hämtar…</p></div>
                 </article>
             </div>
@@ -61,7 +60,7 @@
                     <div class="commute-route-labels"><span>Ödåkra</span><span>Jula Hyllinge</span></div>
                 </div>
             </article>
-            <div class="travel-credits"><a href="https://www.trafiklab.se/" target="_blank" rel="noreferrer">Trafiklab</a><a href="https://www.tomtom.com/products/routing-apis/" target="_blank" rel="noreferrer">TomTom</a></div>
+            <p id="transitStatus" class="travel-updated" role="status">Hämtar reseinformation…</p>
         </section>
         </div>
 
@@ -73,7 +72,7 @@
 
         <footer class="dashboard-footer">
             <button id="settingsBtn" class="text-button" type="button">Login</button>
-            <div><button id="fullscreenBtn" class="text-button" type="button">Fullscreen</button><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Weather by Open-Meteo</a></div>
+            <div><button id="fullscreenBtn" class="text-button" type="button">Fullscreen</button><a href="https://www.trafiklab.se/" target="_blank" rel="noreferrer">Trafiklab</a><a href="https://www.tomtom.com/products/routing-apis/" target="_blank" rel="noreferrer">TomTom</a><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></div>
             <time id="lastUpdated" title="Vehicle data last updated" hidden>--:--</time>
         </footer>
 

@@ -29,3 +29,28 @@ test('Tessan uses a white Model Y while retaining her own Tibber identity and me
     assert.equal(tessan.animationPose, null);
     assert.equal(tessan.hiddenObjects.length, 0);
 });
+
+test('camera waits for recenter to finish and frames each viewer only once', () => {
+    let animationEnd;
+    let fallback;
+    let reads = 0;
+    let moves = 0;
+    context.setTimeout = callback => { fallback = callback; return 1; };
+    context.clearTimeout = () => {};
+    const api = {
+        setEnableCameraConstraints() {},
+        setFov: (fov, callback) => callback(),
+        setCameraLookAtEndAnimationCallback: callback => { animationEnd = callback; },
+        recenterCamera: callback => callback(null),
+        getCameraLookAt: callback => { reads++; callback(null, { position: [0, -10, 2], target: [0, 0, 1] }); },
+        setCameraLookAt: (position, target, duration, callback) => { moves++; assert.ok(position.every(Number.isFinite)); callback(); },
+        setUserInteraction() {}
+    };
+    const viewer = { isConnected: true, parentElement: { style: { setProperty() {} } } };
+    dashboard.frameVehicle(api, viewer, { cameraHeading: 0 });
+    assert.equal(reads, 0);
+    animationEnd(null);
+    assert.equal(reads, 1);
+    fallback();
+    assert.equal(moves, 1);
+});

@@ -1,6 +1,5 @@
 import { reportTravelUpdate } from './travel-status.js';
 const widget = document.getElementById('transitWidget');
-const status = document.getElementById('transitStatus');
 const routes = {
     train: document.getElementById('nextTrain'),
     bus: document.getElementById('nextBus')
@@ -16,20 +15,15 @@ function renderJourney(type, journey) {
     if (!card) return;
     const departure = card.querySelector('.transit-time');
     const detail = card.querySelector('.transit-detail');
-    const badge = card.querySelector('.transit-badge');
     if (!journey) {
         departure.textContent = '—';
         detail.textContent = 'Ingen avgång nästa timme';
-        badge.textContent = type === 'train' ? '—' : '5';
         return;
     }
     departure.textContent = time(journey.departure);
-    badge.textContent = journey.line || (type === 'bus' ? '5' : '—');
-    const extras = [];
-    if (journey.platform) extras.push(`läge ${journey.platform}`);
-    if (journey.delay > 0) extras.push(`+${Math.ceil(journey.delay / 60)} min`);
-    else if (journey.realtime) extras.push('i tid');
-    detail.textContent = extras.join(' · ') || 'Enligt tidtabell';
+    const delay = Number(journey.delay) || 0;
+    detail.textContent = delay > 0 ? `+${Math.ceil(delay / 60)} min`
+        : delay < 0 ? `−${Math.ceil(Math.abs(delay) / 60)} min` : 'Enligt tidtabell';
 }
 
 async function refreshTransit() {

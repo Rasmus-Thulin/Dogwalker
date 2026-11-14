@@ -687,6 +687,7 @@ class ChargingDashboard {
                     viewer.dataset.viewerState = 'ready';
                     api.addEventListener('viewerready', () => {
                         if (!viewer.isConnected) return;
+                        api.pause();
                         this.applyVehiclePaint(api, vehicle);
                         if (vehicle.lighting) api.setEnvironment(vehicle.lighting);
                         if (vehicle.postProcessing) api.setPostProcessing(vehicle.postProcessing);
@@ -754,32 +755,44 @@ class ChargingDashboard {
         const centerCamera = vehicle.hiddenObjects?.length
             ? api.focusOnVisibleGeometries.bind(api) : api.recenterCamera.bind(api);
         api.setFov(35, () => {
-            centerCamera(error => {
-                if (error) return;
+            // Recentring animates: wait until it finishes before applying our zoom,
+            // otherwise its final frame overwrites the requested camera position.
+            let framed = false;
+            let fallback;
+            const applyFrame = error => {
+                if (error || framed || !viewer.isConnected) return;
+                framed = true;
+                clearTimeout(fallback);
                 api.getCameraLookAt((cameraError, camera) => {
                     if (cameraError) return;
-                    const distance = Math.hypot(...camera.position.map((coordinate, axis) => coordinate - camera.target[axis])) * 0.82;
+                    const distance = Math.hypot(...camera.position.map((coordinate, axis) => coordinate - camera.target[axis])) * 0.62;
                     // This model faces the opposite diagonal from its published rear view.
                     const azimuth = (235 + vehicle.cameraHeading) * Math.PI / 180;
-                    const elevation = 14 * Math.PI / 180;
+                    const elevation = 10 * Math.PI / 180;
                     const direction = [
                         Math.sin(azimuth) * Math.cos(elevation),
                         -Math.cos(azimuth) * Math.cos(elevation),
                         Math.sin(elevation)
                     ];
-                    const position = camera.target.map((coordinate, axis) => coordinate + direction[axis] * distance);
-                    const groundHeight = Math.max(0, camera.target[2]);
-                    const groundDepth = distance + groundHeight * Math.sin(elevation);
-                    const groundOffset = groundHeight * Math.cos(elevation) / (2 * groundDepth * Math.tan(35 * Math.PI / 360));
+                    // Project the ground just above the stats panel so the tires
+                    // meet its top edge rather than floating in the middle.
+                    const shift = 2 * distance * Math.tan(35 * Math.PI / 360) * -0.08;
+                    const up = [-Math.sin(azimuth) * Math.sin(elevation), Math.cos(azimuth) * Math.sin(elevation), Math.cos(elevation)];
+                    const target = camera.target.map((coordinate, axis) => coordinate + up[axis] * shift);
+                    const position = target.map((coordinate, axis) => coordinate + direction[axis] * distance);
                     if (viewer.isConnected) {
                         const surface = viewer.parentElement;
                         surface.style.setProperty('--contact-shadow-x', '50%');
-                        surface.style.setProperty('--contact-shadow-y', `${Math.max(52, Math.min(82, 50 + groundOffset * 100))}%`);
+                        surface.style.setProperty('--contact-shadow-y', '93%');
                     }
-                    api.setCameraLookAt(position, camera.target, 0, () => {
+                    api.setCameraLookAt(position, target, 0, () => {
                         api.setUserInteraction(true);
                     });
                 });
+            };
+            api.setCameraLookAtEndAnimationCallback(applyFrame);
+            centerCamera(error => {
+                if (!error) fallback = setTimeout(() => applyFrame(null), 1200);
             });
         });
     }
