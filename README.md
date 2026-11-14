@@ -153,3 +153,8 @@ renderer and the same layout. The oldest fetched timestamp across the travel
 sources appears once in the panel header, with a stale label on failures. Blue
 car route lines show start/end markers; train and bus cards have no route line; these markers do not imply intermediate
 stops. Car traffic slowdowns retain orange/red segments.
+
+The 3D stages use a bounded height instead of expanding to fill free screen
+space. Tablet layouts prioritize the live overview and travel cards, with larger
+times and values. Both Sketchfab viewers explicitly disable automatic spinning
+and initialize to the same front three-quarter view on each page load.

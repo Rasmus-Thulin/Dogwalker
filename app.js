@@ -702,6 +702,7 @@ class ChargingDashboard {
                 error: retry,
                 autostart: 1,
                 animation_autoplay: 0,
+                autospin: 0,
                 transparent: 1,
                 ui_stop: 1,
                 ui_theme: 'dark',
@@ -719,7 +720,7 @@ class ChargingDashboard {
     }
 
     getSketchfabEmbedUrl(modelId) {
-        return `https://sketchfab.com/models/${modelId}/embed?autostart=1&animation_autoplay=0&transparent=1&ui_stop=1&ui_theme=dark&ui_controls=1&ui_infos=1&ui_watermark=1&ui_settings=1&ui_fullscreen=1&ui_inspector=1`;
+        return `https://sketchfab.com/models/${modelId}/embed?autostart=1&animation_autoplay=0&autospin=0&transparent=1&ui_stop=1&ui_theme=dark&ui_controls=1&ui_infos=1&ui_watermark=1&ui_settings=1&ui_fullscreen=1&ui_inspector=1`;
     }
 
     applyVehiclePose(api, vehicle, onReady) {
@@ -758,7 +759,8 @@ class ChargingDashboard {
                 api.getCameraLookAt((cameraError, camera) => {
                     if (cameraError) return;
                     const distance = Math.hypot(...camera.position.map((coordinate, axis) => coordinate - camera.target[axis])) * 0.82;
-                    const azimuth = (55 + vehicle.cameraHeading) * Math.PI / 180;
+                    // This model faces the opposite diagonal from its published rear view.
+                    const azimuth = (235 + vehicle.cameraHeading) * Math.PI / 180;
                     const elevation = 14 * Math.PI / 180;
                     const direction = [
                         Math.sin(azimuth) * Math.cos(elevation),

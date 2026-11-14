@@ -3452,3 +3452,34 @@ body {
 .portrait-dashboard .transit-route .transit-badge { flex-shrink: 0; margin: 0; }
 .portrait-dashboard .transit-route .transit-detail { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
 .portrait-dashboard .transit-route .transit-time { flex-shrink: 0; }
+/* Prioritize live overview information over the decorative 3D stage. */
+.portrait-dashboard .garage-board { flex: 0 0 auto; }
+.portrait-dashboard .vehicle-panel { min-height: 0; grid-template-rows: auto clamp(80px, 10svh, 130px) auto auto; }
+.portrait-dashboard .vehicle-panel-surface { min-height: 0; height: 100%; }
+@media (min-width: 600px) and (max-width: 1400px) and (min-height: 540px) {
+    .dashboard-top { min-height: clamp(280px, 32svh, 360px); }
+    .portrait-dashboard .vehicle-panel { grid-template-rows: auto clamp(60px, 7svh, 85px) auto auto; }
+    .portrait-dashboard .overview-card { padding: 14px 10px 12px; gap: 8px; }
+    .overview-label { font-size: .78rem; }
+    .overview-detail { font-size: .65rem; }
+    .portrait-dashboard .overview-card .dashboard-clock { font-size: clamp(2.3rem, 5vw, 3.3rem); }
+    .portrait-dashboard .overview-card .weather-temperature { font-size: 2.7rem; }
+    .portrait-dashboard .overview-card #weatherCondition { font-size: .8rem; }
+    .overview-value { font-size: clamp(1.85rem, 3.8vw, 2.6rem); }
+    .sun-times time { font-size: clamp(1.2rem, 2.5vw, 1.6rem); }
+    .portrait-dashboard .transit-widget { display: flex; flex-direction: column; }
+    .portrait-dashboard .transit-routes { flex: 1; }
+    .portrait-dashboard .transit-route { padding: 10px; gap: 7px; }
+    .portrait-dashboard .transit-route h3 { font-size: .76rem; }
+    .portrait-dashboard .transit-route .transit-time { font-size: 1.65rem; }
+    .portrait-dashboard .car-commute { flex: 1; padding: 11px 10px 9px; }
+    .car-commute .commute-destination h3 { font-size: .82rem; }
+    #commuteDuration, #julaDuration { font-size: 1.55rem; }
+}
+@media (min-width: 600px) and (max-width: 1400px) and (min-height: 540px) and (max-height: 800px) {
+    .dashboard-top { min-height: 250px; }
+    .portrait-dashboard .vehicle-panel { grid-template-rows: auto 40px auto auto; }
+    .portrait-dashboard .overview-card { padding: 10px 9px; gap: 5px; }
+    .portrait-dashboard .transit-route { padding: 7px 8px; gap: 3px; }
+    .portrait-dashboard .car-commute { padding: 8px 9px 7px; }
+}
