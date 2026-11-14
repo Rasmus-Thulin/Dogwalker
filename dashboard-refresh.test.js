@@ -84,3 +84,19 @@ test('charging cost uses each real car battery and handles reached limit, negati
     assert.equal(instance.estimateChargeCost(tessan, { value: null }, { value: 80 }), '');
     assert.equal(instance.estimateChargeCost({ ...tessan, currentEnergyPrice: null }, { value: 50 }, { value: 80 }), '');
 });
+
+
+test('overview price shows zero and negative prices but never labels an expired interval as current', () => {
+    const { instance, nodes } = dashboard();
+    const current = perKwh => [{ currentEnergyPrice: { perKwh, currency: 'SEK', time: new Date(900000).toISOString() } }];
+    instance.updateEnergyPriceCard(current(0));
+    assert.equal(nodes.get('currentEnergyPrice').textContent, '0,00');
+    instance.updateEnergyPriceCard(current(-0.5), true);
+    assert.equal(nodes.get('currentEnergyPrice').textContent, '−0,50');
+    assert.match(nodes.get('energyPriceStatus').textContent, /Senast hämtat/);
+    instance.updateEnergyPriceCard([{ currentEnergyPrice: { perKwh: 2, time: new Date(0).toISOString() } }]);
+    assert.equal(nodes.get('currentEnergyPrice').textContent, '—');
+    assert.match(nodes.get('energyPriceStatus').textContent, /väntar på nytt pris/);
+    instance.updateEnergyPriceCard([{ energyPriceStatus: 'scope-required' }]);
+    assert.match(nodes.get('energyPriceStatus').textContent, /Återanslut/);
+});

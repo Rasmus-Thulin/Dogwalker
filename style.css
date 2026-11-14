@@ -3328,3 +3328,39 @@ body {
 #transitStatus { max-width: 100%; margin: 0; text-align: right; }
 #commuteTraffic:empty { display: none; }
 .portrait-dashboard .vehicle-panel .vehicle-panel-stats { margin-bottom: 12px; }
+
+/* Four independent overview cards replace the combined weather and clock panel. */
+.overview-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; min-width: 0; }
+.portrait-dashboard .overview-card {
+    position: relative; isolation: isolate; overflow: hidden; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; padding: 20px 14px; border: 1px solid var(--glass-edge);
+    border-radius: 24px; text-align: center;
+    background: linear-gradient(145deg, #ffffff0d, #ffffff03 60%), var(--glass-surface);
+    box-shadow: var(--glass-shadow); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+}
+.overview-label { margin: 0; font-size: .75rem; font-weight: 500; letter-spacing: .04em; }
+.overview-detail { margin: 0; font-size: .65rem; line-height: 1.5; opacity: .8; }
+.overview-value { margin: 0; font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 300; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.overview-unit { font-size: .7rem; white-space: nowrap; }
+.portrait-dashboard .overview-card .dashboard-clock { font-size: clamp(2.4rem, 5vw, 4rem); }
+.portrait-dashboard .overview-card .weather-current { display: flex; flex-direction: column; width: 100%; gap: 3px; padding: 0; margin: 0; }
+.portrait-dashboard .overview-card .weather-temperature { font-size: 2.5rem; line-height: 1; }
+.portrait-dashboard .overview-card #weatherCondition { font-size: .7rem; }
+.portrait-dashboard .overview-card #weatherHighLow { font-size: .6rem; margin: 0; }
+.portrait-dashboard .overview-card .weather-hourly { width: 100%; min-height: 0; gap: 3px; padding: 8px 0 0; border: 0; border-top: 1px solid #ffffff16; border-radius: 0; background: none; box-shadow: none; }
+.portrait-dashboard .overview-card .weather-hourly > div { font-size: .55rem; gap: 2px; }
+.portrait-dashboard .overview-card .weather-hourly strong { font-size: .65rem; }
+.portrait-dashboard .overview-card .forecast-icon { font-size: .8rem; }
+.sun-times { display: flex; justify-content: center; gap: 22px; width: 100%; }
+.sun-times > div { display: grid; gap: 8px; }
+.sun-times span { font-size: .6rem; opacity: .8; }
+.sun-times time { font-size: clamp(1.2rem, 2.5vw, 1.7rem); font-weight: 300; font-variant-numeric: tabular-nums; }
+@media (max-width: 599px) {
+    .overview-cards { gap: 10px; }
+    .portrait-dashboard .overview-card { padding: 18px 10px; border-radius: 22px; }
+    .sun-times { gap: 14px; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .portrait-dashboard .overview-card { background: #161a24; backdrop-filter: none; -webkit-backdrop-filter: none; }
+}

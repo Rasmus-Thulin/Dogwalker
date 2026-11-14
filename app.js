@@ -414,9 +414,13 @@ class ChargingDashboard {
         try {
             await this.fetchTibberDevices();
         } catch (error) {
+            this.updateEnergyPriceCard(this.vehicles, true);
             const delay = Math.max(30, Number(error.retryAfter) || 0);
             this.nextDeviceFetchAt = Date.now() + delay * 1000;
-            if (this.vehicles.length === 0) this.displayDevices([]);
+            if (this.vehicles.length === 0) {
+                this.displayDevices([]);
+                this.updateEnergyPriceCard([]);
+            }
             this.showError(error.status === 429 ? this.pausedUpdateMessage(this.nextDeviceFetchAt) : error.message);
         } finally {
             this.fetchInProgress = false;
@@ -443,13 +447,17 @@ class ChargingDashboard {
                 await this.fetchData();
             } else {
                 this.displayDevices([]);
+                this.updateEnergyPriceCard([]);
                 this.showError(status.configured
                     ? 'Connect your Tibber account via Login below to view live data.'
                     : configurationPrompt);
             }
         } catch (error) {
             document.getElementById('connectionStatus').textContent = 'Cannot reach the server.';
-            if (this.vehicles.length === 0) this.displayDevices([]);
+            if (this.vehicles.length === 0) {
+                this.displayDevices([]);
+                this.updateEnergyPriceCard([]);
+            }
             this.showError('Start the server with npm start and open http://localhost:5175.');
         }
     }
@@ -465,6 +473,7 @@ class ChargingDashboard {
         }
 
         const devices = Array.isArray(result.devices) ? result.devices : [];
+        this.updateEnergyPriceCard(devices, result.stale);
         const vehicles = devices
             .map(device => this.formatTibberDevice(device))
             .filter(device => device.category === 'Bil');
@@ -479,6 +488,22 @@ class ChargingDashboard {
         this.updateLastUpdatedTime(this.lastDataUpdatedAt);
         this.nextDeviceFetchAt = Date.now() + Math.max(this.refreshInterval, Number(result.retryAfter) || 0) * 1000;
         if (result.stale) this.showError(this.pausedUpdateMessage(this.nextDeviceFetchAt));
+    }
+
+    updateEnergyPriceCard(devices, stale = false) {
+        const value = document.getElementById('currentEnergyPrice');
+        const unit = document.getElementById('energyPriceUnit');
+        const status = document.getElementById('energyPriceStatus');
+        if (!value || !unit || !status) return;
+        const price = devices.find(device => device.currentEnergyPrice?.perKwh != null)?.currentEnergyPrice;
+        const valid = price && Number.isFinite(Number(price.perKwh));
+        const expired = valid && (!Number.isFinite(Date.parse(price.time)) || Date.now() >= Date.parse(price.time) + 15 * 60 * 1000);
+        value.textContent = valid && !expired ? Number(price.perKwh).toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+        unit.textContent = price?.currency && price.currency !== 'SEK' ? `${price.currency}/kWh` : 'kr/kWh';
+        status.textContent = expired ? 'Aktuellt elpris saknas · väntar på nytt pris'
+            : valid ? `${stale ? 'Senast hämtat' : 'Tibber'} · ${new Date(price.time).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' })} · inkl. tillgängliga nätavgifter`
+            : devices.some(device => device.energyPriceStatus === 'scope-required') ? 'Återanslut Tibber via Login för elpris'
+            : 'Aktuellt elpris saknas';
     }
 
     pausedUpdateMessage(retryAt) {

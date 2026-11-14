@@ -9,7 +9,7 @@ function updateClock() {
     const now = new Date();
     $('dashboardClock').textContent = now.toLocaleTimeString('sv-SE', { timeZone, hour: '2-digit', minute: '2-digit' });
     $('dashboardClock').dateTime = now.toISOString();
-    $('dashboardDate').textContent = now.toLocaleDateString('en-GB', { timeZone, weekday: 'long', day: 'numeric', month: 'long' });
+    $('dashboardDate').textContent = now.toLocaleDateString('sv-SE', { timeZone, weekday: 'long', day: 'numeric', month: 'long' });
     $('dashboardDate').dateTime = now.toISOString();
 }
 function condition(code, day = true) {
@@ -43,7 +43,7 @@ async function loadWeather() {
     try {
         const params = new URLSearchParams({ latitude: location.latitude, longitude: location.longitude,
             current: 'temperature_2m,weather_code,is_day', hourly: 'temperature_2m,weather_code,is_day',
-            daily: 'temperature_2m_max,temperature_2m_min', timezone: 'auto', forecast_days: '2', timeformat: 'unixtime' });
+            daily: 'temperature_2m_max,temperature_2m_min,sunrise,sunset', timezone: 'auto', forecast_days: '2', timeformat: 'unixtime' });
         const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, { signal: controller.signal });
         if (!response.ok) throw new Error('Weather unavailable');
         const data = await response.json();
@@ -54,7 +54,14 @@ async function loadWeather() {
         const current = condition(data.current.weather_code, Boolean(data.current.is_day));
         $('weatherTemperature').textContent = `${Math.round(data.current.temperature_2m)}°`;
         $('weatherCondition').textContent = current.name;
-        $('weatherHighLow').textContent = `High ${Math.round(data.daily.temperature_2m_max[0])}° · Low ${Math.round(data.daily.temperature_2m_min[0])}°`;
+        $('weatherHighLow').textContent = `Högst ${Math.round(data.daily.temperature_2m_max[0])}° · Lägst ${Math.round(data.daily.temperature_2m_min[0])}°`;
+        const sunrise = data.daily.sunrise?.[0];
+        const sunset = data.daily.sunset?.[0];
+        for (const [id, value] of [['sunriseTime', sunrise], ['sunsetTime', sunset]]) {
+            $(id).textContent = value ? new Date(value * 1000).toLocaleTimeString('sv-SE', { timeZone, hour: '2-digit', minute: '2-digit' }) : '--:--';
+            $(id).dateTime = value ? new Date(value * 1000).toISOString() : '';
+        }
+        $('sunStatus').textContent = sunrise && sunset ? `${Math.floor((sunset - sunrise) / 3600)} h ${Math.floor((sunset - sunrise) % 3600 / 60)} min dagsljus · ${location.name}` : 'Soltider saknas';
         setAtmosphere(current.scene);
         $('weatherHourly').replaceChildren();
         const start = Math.max(0, data.hourly.time.findIndex(time => time >= data.current.time));
@@ -75,6 +82,7 @@ async function loadWeather() {
         hasWeather = true;
     } catch {
         if (weatherRequest !== controller) return;
+        $('sunStatus').textContent = hasWeather ? 'Uppdatering saknas · visar senast hämtade soltider' : 'Soltider tillfälligt otillgängliga';
         $('weatherCondition').textContent = hasWeather ? 'Weather update unavailable · showing last forecast' : 'Weather temporarily unavailable';
     } finally { clearTimeout(timeout); }
 }
@@ -103,6 +111,8 @@ async function useDeviceLocation() {
     if (generation !== locationGeneration) return;
     location = nextLocation;
     hasWeather = false;
+    $('sunriseTime').textContent = $('sunsetTime').textContent = '--:--';
+    $('sunStatus').textContent = 'Hämtar soltider…';
     timeZone = location.timezone || 'Europe/Stockholm';
     $('weatherTemperature').textContent = '—°';
     $('weatherHourly').replaceChildren();
@@ -127,6 +137,8 @@ $('weatherLocationForm').addEventListener('submit', async event => {
         if (!match) throw new Error();
         location = { name: match.name, latitude: match.latitude, longitude: match.longitude, timezone: match.timezone };
         hasWeather = false;
+        $('sunriseTime').textContent = $('sunsetTime').textContent = '--:--';
+        $('sunStatus').textContent = 'Hämtar soltider…';
         $('weatherTemperature').textContent = '—°';
         $('weatherHourly').replaceChildren();
         $('weatherHighLow').textContent = 'High —° · Low —°';
