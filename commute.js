@@ -62,3 +62,35 @@ async function refreshCommute() {
 document.addEventListener('visibilitychange', refreshCommute);
 setInterval(refreshCommute, 60000);
 void refreshCommute();
+
+// Independent cache and retry state keep a failure on either route isolated.
+let julaBusy = false;
+let julaRetryAt = 0;
+async function refreshJulaCommute() {
+    if (document.hidden || julaBusy || Date.now() < julaRetryAt) return;
+    julaBusy = true;
+    const value = document.getElementById('julaDuration');
+    const status = document.getElementById('julaStatus');
+    try {
+        const response = await fetch('/api/commute/jula');
+        const result = await response.json();
+        julaRetryAt = Date.now() + Math.max(300, Number(result.retryAfter) || 0) * 1000;
+        if (!response.ok) throw new Error('Unavailable');
+        if (!result.configured) {
+            value.textContent = '—';
+            status.textContent = 'Bilrestid inte ansluten';
+            return;
+        }
+        if (!Number.isFinite(result.durationSeconds) || result.durationSeconds <= 0) throw new Error('Invalid duration');
+        value.textContent = `${Math.ceil(result.durationSeconds / 60)} min`;
+        const time = new Date(result.updatedAt).toLocaleTimeString('sv-SE', { timeZone: 'Europe/Stockholm', hour: '2-digit', minute: '2-digit' });
+        status.textContent = `${result.stale ? 'Senast hämtad · ej aktuell trafik' : 'Avresa nu'} · ${time}`;
+    } catch {
+        value.textContent = '—';
+        status.textContent = 'Bilrestid tillfälligt otillgänglig';
+        julaRetryAt = Date.now() + 300000;
+    } finally { julaBusy = false; }
+}
+document.addEventListener('visibilitychange', refreshJulaCommute);
+setInterval(refreshJulaCommute, 60000);
+void refreshJulaCommute();

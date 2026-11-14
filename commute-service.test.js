@@ -56,3 +56,22 @@ test('missing geometry has no traffic line; a clear route is blue, closures and 
         assert.equal(trafficSegments({ legs, sections: [{ sectionType: 'TRAFFIC', startPointIndex: 0, endPointIndex: 1, ...section }] })[0].state, 'stopped');
     }
 });
+
+test('Jula route geocodes the exact Hyllinge address and caches independently of Hubhult', async () => {
+    const requests = [];
+    const service = createCommuteService({ apiKey: 'key', destination: 'Brännaregatan 3D, Hyllinge, Sverige', destinationNumber: '3D', fetchImpl: async value => {
+        const url = new URL(value);
+        requests.push(url);
+        if (url.pathname.includes('/geocode/')) {
+            const origin = decodeURIComponent(url.pathname).includes('Månskensgatan');
+            return { ok: true, json: async () => ({ results: [{ address: { streetNumber: origin ? '20' : '3 D' }, position: { lat: origin ? 56.1 : 56.103, lon: origin ? 12.74 : 12.86 } }] }) };
+        }
+        assert.match(url.pathname, /56.1,12.74:56.103,12.86/);
+        return { ok: true, json: async () => ({ routes: [{ summary: { travelTimeInSeconds: 660, lengthInMeters: 11000 } }] }) };
+    } });
+    const result = await service.get();
+    assert.equal(result.durationSeconds, 660);
+    assert.ok(requests.some(url => decodeURIComponent(url.pathname).includes('Brännaregatan 3D, Hyllinge')));
+    await service.get();
+    assert.equal(requests.length, 3);
+});

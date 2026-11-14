@@ -18,8 +18,8 @@
             <section id="weatherWidget" class="weather-widget overview-card" data-weather="cloudy" aria-label="Väder">
                 <div class="weather-atmosphere" aria-hidden="true"><i class="weather-orb"></i><i class="weather-cloud cloud-one"></i><i class="weather-cloud cloud-two"></i><div class="weather-particles"></div></div>
                 <h2 id="weatherLocation" class="overview-label">Ödåkra</h2>
-                <div class="weather-current"><p id="weatherTemperature" class="weather-temperature">—°</p><p id="weatherCondition" role="status">Hämtar väder…</p><p id="weatherHighLow">Högst —° · Lägst —°</p></div>
-                <div id="weatherHourly" class="weather-hourly" aria-label="Timprognos"></div>
+                <div class="weather-current"><p id="weatherTemperature" class="weather-temperature">—°</p><p id="weatherCondition" role="status">Hämtar väder…</p><p id="weatherHighLow" hidden>Högst —° · Lägst —°</p></div>
+                <div id="weatherHourly" hidden class="weather-hourly" aria-label="Timprognos"></div>
             </section>
             <section class="overview-card energy-card" aria-label="Elpris just nu">
                 <h2 class="overview-label">Elpris just nu</h2>
@@ -54,6 +54,10 @@
                 </div>
                 <p id="commuteUpdated" class="commute-updated"></p>
                 <a class="commute-credit" href="https://www.tomtom.com/products/routing-apis/" target="_blank" rel="noreferrer">Trafikdata: TomTom</a>
+            </article>
+            <article class="jula-commute" aria-label="Bilrestid från Månskensgatan 20 till Jula Hyllinge">
+                <div><span class="transit-badge">Bil</span><h3>Jula Hyllinge</h3></div>
+                <div><strong id="julaDuration">—</strong><p id="julaStatus" role="status">Hämtar bilrestid…</p></div>
             </article>
             <a class="transit-credit" href="https://www.trafiklab.se/" target="_blank" rel="noreferrer">Trafikdata från Trafiklab.se</a>
         </section>

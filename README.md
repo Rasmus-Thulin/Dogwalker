@@ -46,7 +46,7 @@ For local environment configuration, use `.env.example` as the template for an i
 
 The dark glass interface uses translucent panels, subtle edge highlights and a uniform white text palette. Reduced transparency, increased contrast and reduced motion preferences are supported.
 
-The header has four separate cards: a live clock and date, animated weather with a six-hour forecast, the current Tibber electricity price, and local sunrise/sunset with daylight duration. Expired electricity price intervals are hidden until a current price is available. Weather and sun times come from [Open-Meteo](https://open-meteo.com/). The browser requests the device location on startup and uses Ödåkra when location access is denied, unavailable or times out. Device coordinates are rounded to city-level precision and sent to Open-Meteo for weather and BigDataCloud for the locality name; they are not saved in browser storage. Change the city manually or retry **Use my location** through **Login** in the footer. Weather refreshes every 15 minutes and retains the last successful forecast during temporary errors.
+The header has four separate cards: a live clock and date, compact current weather, the current Tibber electricity price, and local sunrise/sunset with daylight duration. All four headings share a top inset; tablet layouts hide the hourly forecast and high/low details to leave room for the rest of the dashboard. Expired electricity price intervals are hidden until a current price is available. Weather and sun times come from [Open-Meteo](https://open-meteo.com/). The browser requests the device location on startup and uses Ödåkra when location access is denied, unavailable or times out. Device coordinates are rounded to city-level precision and sent to Open-Meteo for weather and BigDataCloud for the locality name; they are not saved in browser storage. Change the city manually or retry **Use my location** through **Login** in the footer. Weather refreshes every 15 minutes and retains the last successful forecast during temporary errors.
 
 The transit panel shows the next train from Ödåkra station and bus 5 from Ödåkra Jupitergatan toward Helsingborg C. Add a Trafiklab Realtime APIs key as `TRAFIKLAB_API_KEY`. The key stays on the server; departures are shared through a 60-second cache and polling pauses while the display is hidden. Transit data is provided by Trafiklab under CC BY 4.0.
 
@@ -138,3 +138,10 @@ and red a major jam, near-stationary traffic (at most 5 km/h), or closure. This 
 an incident-based overview, not a guarantee of traffic coverage on every road.
 Hover/focus affected segments for distance ranges. Hide the strip when traffic
 data is unavailable or stale.
+
+The travel panel also shows the live driving time from the same origin to Jula
+Hyllinge, Brännaregatan 3D (address verified against Jula's store page). It uses
+the existing TomTom key, a separate five-minute cache and independent error
+handling. With both routes active, continuous use makes at most 17,856 routing
+calls in a 31-day month, plus address lookups on server startup. No paid fallback
+is enabled. The compact tablet layout includes this route alongside Hubhult.

@@ -41,7 +41,7 @@ function trafficSegments(route) {
     return segments;
 }
 
-function createCommuteService({ apiKey, fetchImpl, now = Date.now }) {
+function createCommuteService({ apiKey, fetchImpl, now = Date.now, destination = DESTINATION, destinationNumber = '2' }) {
     let endpoints;
     async function request(url) {
         url.searchParams.set('key', apiKey);
@@ -60,13 +60,13 @@ function createCommuteService({ apiKey, fetchImpl, now = Date.now }) {
         url.searchParams.set('limit', '1');
         const data = await request(url);
         const match = data.results?.[0];
-        if (String(match?.address?.streetNumber) !== number || !Number.isFinite(match?.position?.lat) || !Number.isFinite(match?.position?.lon)) {
+        if (String(match?.address?.streetNumber).replace(/\s/g, '').toUpperCase() !== number.replace(/\s/g, '').toUpperCase() || !Number.isFinite(match?.position?.lat) || !Number.isFinite(match?.position?.lon)) {
             throw new Error('Kunde inte hitta den exakta adressen för bilresan.');
         }
         return `${match.position.lat},${match.position.lon}`;
     }
     const cache = createCachedLoader(async () => {
-        if (!endpoints) endpoints = await Promise.all([geocode(ORIGIN, '20'), geocode(DESTINATION, '2')]);
+        if (!endpoints) endpoints = await Promise.all([geocode(ORIGIN, '20'), geocode(destination, destinationNumber)]);
         const url = new URL(`https://api.tomtom.com/routing/1/calculateRoute/${endpoints.join(':')}/json`);
         for (const [key, value] of Object.entries({ travelMode: 'car', traffic: 'true', departAt: 'now', routeType: 'fastest', routeRepresentation: 'polyline', sectionType: 'traffic' })) url.searchParams.set(key, value);
         const data = await request(url);

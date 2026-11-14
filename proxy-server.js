@@ -11,6 +11,7 @@ const { createCachedLoader, retryAfterSeconds } = require('./cached-loader');
 const { createTransitService } = require('./transit-service');
 const { createCommuteService } = require('./commute-service');
 const commuteService = createCommuteService({ apiKey: process.env.TOMTOM_API_KEY || '', fetchImpl: fetch });
+const julaCommuteService = createCommuteService({ apiKey: process.env.TOMTOM_API_KEY || '', fetchImpl: fetch, destination: 'Brännaregatan 3D, Hyllinge, Sverige', destinationNumber: '3D' });
 const { getCurrentEnergyPrice } = require('./energy-price');
 const { createCalendarService } = require('./calendar-service');
 const calendarService = createCalendarService({
@@ -377,15 +378,18 @@ app.get('/api/transit', async (req, res) => {
     }
 });
 
-app.get('/api/commute', async (req, res) => {
-    res.set('Cache-Control', 'no-store');
-    try {
-        res.json(await commuteService.get());
-    } catch (error) {
-        // Never pass through upstream URLs or credentials to the client.
-        res.status(error.status || 502).json({ error: 'Kunde inte uppdatera bilrestiden.', retryAfter: error.retryAfter || 0 });
-    }
-});
+for (const [path, service] of [['/api/commute', commuteService], ['/api/commute/jula', julaCommuteService]]) {
+    app.get(path, async (req, res) => {
+        res.set('Cache-Control', 'no-store');
+        try {
+            res.json(await service.get());
+        } catch (error) {
+            // Never pass through upstream URLs or credentials to the client.
+            res.status(error.status || 502).json({ error: 'Kunde inte uppdatera bilrestiden.', retryAfter: error.retryAfter || 0 });
+        }
+    });
+
+}
 
 app.get('/api/calendars/:child', async (req, res) => {
     res.set('Cache-Control', 'no-store');
