@@ -568,7 +568,6 @@ class ChargingDashboard {
                 paintFinish: 'high-gloss',
                 lighting: { exposure: 0.38, lightIntensity: 0.65 },
                 paintColor: [0.8, 0.8, 0.8],
-                cameraDistanceScale: 0.34,
                 // Bloom spills the bright white paint beyond the car silhouette.
                 postProcessing: { bloomEnable: false },
                 paintMaterials: ['body'],

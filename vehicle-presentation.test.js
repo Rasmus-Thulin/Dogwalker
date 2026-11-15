@@ -17,7 +17,7 @@ test('Tessan uses a white Model Y while retaining her own Tibber identity and me
     assert.equal(tessan.id, 'tessans-device');
     assert.equal(tessan.name, 'Tessan');
     assert.equal(tessan.model, 'Tesla Model Y');
-    assert.equal(tessan.cameraDistanceScale, 0.34);
+    assert.equal(tessan.cameraDistanceScale, 0.5);
     assert.equal(gullan.cameraDistanceScale, 0.5);
     assert.equal(tessan.sketchfabModelId, gullan.sketchfabModelId);
     assert.deepEqual(Array.from(tessan.paintColor), [0.8, 0.8, 0.8]);
