@@ -17,6 +17,8 @@ test('Tessan uses a white Model Y while retaining her own Tibber identity and me
     assert.equal(tessan.id, 'tessans-device');
     assert.equal(tessan.name, 'Tessan');
     assert.equal(tessan.model, 'Tesla Model Y');
+    assert.equal(tessan.cameraDistanceScale, 0.34);
+    assert.equal(gullan.cameraDistanceScale, 0.5);
     assert.equal(tessan.sketchfabModelId, gullan.sketchfabModelId);
     assert.deepEqual(Array.from(tessan.paintColor), [0.8, 0.8, 0.8]);
     assert.deepEqual(Array.from(gullan.paintColor), [0.004, 0.004, 0.004]);
@@ -43,11 +45,16 @@ test('camera waits for recenter to finish and frames each viewer only once', () 
         setCameraLookAtEndAnimationCallback: callback => { animationEnd = callback; },
         recenterCamera: callback => callback(null),
         getCameraLookAt: callback => { reads++; callback(null, { position: [0, -10, 2], target: [0, 0, 1] }); },
-        setCameraLookAt: (position, target, duration, callback) => { moves++; assert.ok(position.every(Number.isFinite)); callback(); },
+        setCameraLookAt: (position, target, duration, callback) => {
+            moves++;
+            assert.ok(position.every(Number.isFinite));
+            assert.ok(Math.abs(Math.hypot(...position.map((coordinate, axis) => coordinate - target[axis])) - Math.sqrt(101) * 0.5) < 1e-10);
+            callback();
+        },
         setUserInteraction() {}
     };
     const viewer = { isConnected: true, parentElement: { style: { setProperty() {} } } };
-    dashboard.frameVehicle(api, viewer, { cameraHeading: 0 });
+    dashboard.frameVehicle(api, viewer, { cameraHeading: 0, cameraDistanceScale: 0.5 });
     assert.equal(reads, 0);
     animationEnd(null);
     assert.equal(reads, 1);

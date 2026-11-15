@@ -80,10 +80,12 @@ async function loadWeather() {
             $('weatherHourly').appendChild(hour);
         }
         hasWeather = true;
+        globalThis.reportDashboardUpdate?.('Open-Meteo', Date.now());
     } catch {
         if (weatherRequest !== controller) return;
-        $('sunStatus').textContent = hasWeather ? 'Uppdatering saknas · visar senast hämtade soltider' : 'Soltider tillfälligt otillgängliga';
-        $('weatherCondition').textContent = hasWeather ? 'Weather update unavailable · showing last forecast' : 'Weather temporarily unavailable';
+        globalThis.reportDashboardUpdate?.('Open-Meteo', NaN, true);
+        if (!hasWeather) $('sunStatus').textContent = 'Soltider saknas';
+        if (!hasWeather) $('weatherCondition').textContent = 'Väder saknas';
     } finally { clearTimeout(timeout); }
 }
 async function useDeviceLocation() {

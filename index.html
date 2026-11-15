@@ -18,13 +18,13 @@
             <section id="weatherWidget" class="weather-widget overview-card" data-weather="cloudy" aria-label="Väder">
                 <div class="weather-atmosphere" aria-hidden="true"><i class="weather-orb"></i><i class="weather-cloud cloud-one"></i><i class="weather-cloud cloud-two"></i><div class="weather-particles"></div></div>
                 <h2 id="weatherLocation" class="overview-label">Ödåkra</h2>
-                <div class="weather-current"><p id="weatherTemperature" class="weather-temperature">—°</p><p id="weatherCondition" role="status">Hämtar väder…</p><p id="weatherHighLow" hidden>Högst —° · Lägst —°</p></div>
+                <div class="weather-current"><p id="weatherTemperature" class="weather-temperature">—°</p><p id="weatherCondition" role="status">—</p><p id="weatherHighLow" hidden>Högst —° · Lägst —°</p></div>
                 <div id="weatherHourly" hidden class="weather-hourly" aria-label="Timprognos"></div>
             </section>
             <section class="overview-card energy-card" aria-label="Elpris just nu">
                 <h2 class="overview-label">Elpris just nu</h2>
                 <p class="overview-value"><span id="currentEnergyPrice">—</span> <span id="energyPriceUnit" class="overview-unit">kr/kWh</span></p>
-                <p id="energyPriceStatus" class="overview-detail" role="status">Hämtar från Tibber…</p>
+                <p id="energyPriceStatus" hidden class="overview-detail" role="status">Hämtar från Tibber…</p>
             </section>
             <section class="overview-card sun-card" aria-label="Soluppgång och solnedgång">
                 <h2 class="overview-label">Solen idag</h2>
@@ -35,32 +35,31 @@
 
         <section id="transitWidget" class="transit-widget" aria-label="Avgångar och bilrestid">
             <div class="transit-routes">
-                <article id="nextTrain" class="transit-route transit-train journey-card" aria-label="Öresundståg från Ödåkra till Helsingborg C">
+                <article id="nextTrain" class="transit-route transit-train" aria-label="Öresundståg från Ödåkra till Helsingborg C">
                     <div><h3>Ödåkra (Tåg)</h3></div>
                     <div class="transit-departure"><time class="transit-time">—</time><p class="transit-detail">Hämtar…</p></div>
                 </article>
-                <article id="nextBus" class="transit-route transit-bus journey-card" aria-label="Skånetrafiken linje 5 från Jupitergatan till Helsingborg C">
+                <article id="nextBus" class="transit-route transit-bus" aria-label="Skånetrafiken linje 5 från Jupitergatan till Helsingborg C">
                     <div><h3>Jupitergatan (Buss 5)</h3></div>
                     <div class="transit-departure"><time class="transit-time">—</time><p class="transit-detail">Hämtar…</p></div>
                 </article>
             </div>
-            <article id="carCommute" class="car-commute journey-card" aria-label="Bilrestid till IKEA Hubhult">
+            <article id="carCommute" class="car-commute" aria-label="Bilrestid till IKEA Hubhult">
                 <div class="commute-destination"><h3>IKEA Hubhult</h3></div>
-                <div class="commute-estimate"><strong id="commuteDuration">—</strong><p id="commuteTraffic" role="status">Hämtar…</p></div>
+                <div class="commute-estimate"><strong id="commuteDuration">—</strong><p id="commuteTraffic" role="status"></p></div>
                 <div id="commuteRoute" class="commute-route journey-route" hidden>
                     <div id="commuteTrafficLine" class="commute-traffic-line journey-track" role="img" aria-label="Trafik längs bilrutten"></div>
                     <div class="commute-route-labels"><span>Ödåkra</span><span>Hubhult</span></div>
                 </div>
             </article>
-            <article id="julaCommute" class="car-commute journey-card" aria-label="Bilrestid från Månskensgatan 20 till Jula Hyllinge">
+            <article id="julaCommute" class="car-commute" aria-label="Bilrestid från Månskensgatan 20 till Jula Hyllinge">
                 <div class="commute-destination"><h3>Jula Hyllinge</h3></div>
-                <div class="commute-estimate"><strong id="julaDuration">—</strong><p id="julaStatus" role="status">Hämtar…</p></div>
+                <div class="commute-estimate"><strong id="julaDuration">—</strong><p id="julaStatus" role="status"></p></div>
                 <div id="julaRoute" class="commute-route journey-route" hidden>
                     <div id="julaTrafficLine" class="commute-traffic-line journey-track" role="img" aria-label="Trafik längs bilrutten"></div>
                     <div class="commute-route-labels"><span>Ödåkra</span><span>Jula Hyllinge</span></div>
                 </div>
             </article>
-            <p id="transitStatus" class="travel-updated" role="status">Hämtar reseinformation…</p>
         </section>
         </div>
 
@@ -72,7 +71,8 @@
 
         <footer class="dashboard-footer">
             <button id="settingsBtn" class="text-button" type="button">Login</button>
-            <div><button id="fullscreenBtn" class="text-button" type="button">Fullscreen</button><a href="https://www.trafiklab.se/" target="_blank" rel="noreferrer">Trafiklab</a><a href="https://www.tomtom.com/products/routing-apis/" target="_blank" rel="noreferrer">TomTom</a><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></div>
+            <div><button id="fullscreenBtn" class="text-button" type="button">Fullscreen</button></div>
+            <div id="sourceUpdates" class="source-updates" aria-label="Datakällornas uppdateringar" role="status"></div>
             <time id="lastUpdated" title="Vehicle data last updated" hidden>--:--</time>
         </footer>
 
@@ -130,6 +130,7 @@
         </div>
     </div>
 
+    <script src="source-updates.js"></script>
     <script src="https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js"></script>
     <script type="module" src="app.js"></script>
     <script type="module" src="weather.js"></script>

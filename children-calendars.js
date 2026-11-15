@@ -32,7 +32,7 @@ for (const [index, name] of ['Melwin', 'Elliot'].entries()) {
         </header>
         <div class="child-calendar-period" aria-live="polite" aria-atomic="true"></div>
         <ol class="child-calendar-days"></ol>
-        <p class="child-calendar-note">Ingen kalender ansluten ännu</p>`;
+        <p class="child-calendar-note" hidden>Ingen kalender ansluten ännu</p>`;
     const load = async (start, force = false) => {
         const week = dateKey(start);
         if (!force && week === loadedWeek && Date.now() < retryAt) return;
@@ -47,12 +47,14 @@ for (const [index, name] of ['Melwin', 'Elliot'].entries()) {
             const result = await response.json();
             if (version !== requestVersion) return;
             events = result.events || [];
+            for (const source of result.sources || ['Outlook']) globalThis.reportDashboardUpdate?.(source === 'laget.se' ? 'Laget.se' : source, result.updatedAt, Boolean(result.stale), name);
             const sources = result.sources?.join(' + ') || 'Outlook';
             note = !result.configured ? 'Ingen kalender ansluten ännu' : result.stale
                 ? `${sources} · Vissa kalendrar kunde inte uppdateras`
                 : `${sources} · Uppdaterad ${new Intl.DateTimeFormat('sv-SE', { timeZone: timezone, hour: '2-digit', minute: '2-digit' }).format(new Date(result.updatedAt))}`;
         } catch {
             if (version !== requestVersion) return;
+            for (const source of ['Outlook', 'Laget.se']) globalThis.reportDashboardUpdate?.(source, NaN, true, name);
             note = events.length ? 'Kalendrarna kunde inte uppdateras · Visar sparade aktiviteter' : 'Kunde inte hämta kalendrarna';
             retryAt = Date.now() + 60000;
         }

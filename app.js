@@ -414,6 +414,7 @@ class ChargingDashboard {
         try {
             await this.fetchTibberDevices();
         } catch (error) {
+            globalThis.reportDashboardUpdate?.('Tibber', this.lastDataUpdatedAt, true);
             this.updateEnergyPriceCard(this.vehicles, true);
             const delay = Math.max(30, Number(error.retryAfter) || 0);
             this.nextDeviceFetchAt = Date.now() + delay * 1000;
@@ -485,6 +486,7 @@ class ChargingDashboard {
             document.getElementById('connectionStatus').textContent = 'Bilarna är anslutna. Återanslut Tibber för att ge tillgång till aktuellt elpris och laddkostnad.';
         }
         this.lastDataUpdatedAt = Number(result.updatedAt) || Date.now();
+        globalThis.reportDashboardUpdate?.('Tibber', this.lastDataUpdatedAt, Boolean(result.stale));
         this.updateLastUpdatedTime(this.lastDataUpdatedAt);
         this.nextDeviceFetchAt = Date.now() + Math.max(this.refreshInterval, Number(result.retryAfter) || 0) * 1000;
         if (result.stale) this.showError(this.pausedUpdateMessage(this.nextDeviceFetchAt));
@@ -501,9 +503,11 @@ class ChargingDashboard {
         value.textContent = valid && !expired ? Number(price.perKwh).toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
         unit.textContent = price?.currency && price.currency !== 'SEK' ? `${price.currency}/kWh` : 'kr/kWh';
         status.textContent = expired ? 'Aktuellt elpris saknas · väntar på nytt pris'
-            : valid ? `${stale ? 'Senast hämtat' : 'Tibber'} · ${new Date(price.time).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' })} · inkl. tillgängliga nätavgifter`
+            : valid ? `${stale ? 'Senast hämtat · ' : ''}Inkl. tillgängliga nätavgifter`
             : devices.some(device => device.energyPriceStatus === 'scope-required') ? 'Återanslut Tibber via Login för elpris'
             : 'Aktuellt elpris saknas';
+        if (!valid || expired) globalThis.reportDashboardUpdate?.('Tibber', this.lastDataUpdatedAt, true, 'price', status.textContent);
+        else globalThis.reportDashboardUpdate?.('Tibber', this.lastDataUpdatedAt || Date.now(), stale, 'price');
     }
 
     pausedUpdateMessage(retryAt) {
@@ -564,6 +568,7 @@ class ChargingDashboard {
                 paintFinish: 'high-gloss',
                 lighting: { exposure: 0.38, lightIntensity: 0.65 },
                 paintColor: [0.8, 0.8, 0.8],
+                cameraDistanceScale: 0.34,
                 // Bloom spills the bright white paint beyond the car silhouette.
                 postProcessing: { bloomEnable: false },
                 paintMaterials: ['body'],
@@ -584,6 +589,7 @@ class ChargingDashboard {
             modelLicense: presentation?.license || '',
             paintClass: presentation?.paintClass || '',
             cameraHeading: presentation?.cameraHeading || 0,
+            cameraDistanceScale: presentation?.cameraDistanceScale ?? 0.5,
             animationPose: presentation?.animationPose || null,
             hiddenObjects: presentation?.hiddenObjects || [],
             paintColor: presentation?.paintColor || null,
@@ -709,7 +715,7 @@ class ChargingDashboard {
                 ui_theme: 'dark',
                 ui_controls: 1,
                 ui_infos: 1,
-                ui_watermark: 1,
+                ui_watermark: 0,
                 ui_settings: 1,
                 ui_fullscreen: 1,
                 ui_inspector: 1
@@ -721,7 +727,7 @@ class ChargingDashboard {
     }
 
     getSketchfabEmbedUrl(modelId) {
-        return `https://sketchfab.com/models/${modelId}/embed?autostart=1&animation_autoplay=0&autospin=0&transparent=1&ui_stop=1&ui_theme=dark&ui_controls=1&ui_infos=1&ui_watermark=1&ui_settings=1&ui_fullscreen=1&ui_inspector=1`;
+        return `https://sketchfab.com/models/${modelId}/embed?autostart=1&animation_autoplay=0&autospin=0&transparent=1&ui_stop=1&ui_theme=dark&ui_controls=1&ui_infos=1&ui_watermark=0&ui_settings=1&ui_fullscreen=1&ui_inspector=1`;
     }
 
     applyVehiclePose(api, vehicle, onReady) {
@@ -765,9 +771,9 @@ class ChargingDashboard {
                 clearTimeout(fallback);
                 api.getCameraLookAt((cameraError, camera) => {
                     if (cameraError) return;
-                    const distance = Math.hypot(...camera.position.map((coordinate, axis) => coordinate - camera.target[axis])) * 0.62;
+                    const distance = Math.hypot(...camera.position.map((coordinate, axis) => coordinate - camera.target[axis])) * vehicle.cameraDistanceScale;
                     // This model faces the opposite diagonal from its published rear view.
-                    const azimuth = (235 + vehicle.cameraHeading) * Math.PI / 180;
+                    const azimuth = (305 + vehicle.cameraHeading) * Math.PI / 180;
                     const elevation = 10 * Math.PI / 180;
                     const direction = [
                         Math.sin(azimuth) * Math.cos(elevation),
@@ -775,7 +781,7 @@ class ChargingDashboard {
                         Math.sin(elevation)
                     ];
                     // Project the ground just above the stats panel so the tires
-                    // meet its top edge rather than floating in the middle.
+                    // overlap its top edge instead of floating in the middle.
                     const shift = 2 * distance * Math.tan(35 * Math.PI / 360) * -0.08;
                     const up = [-Math.sin(azimuth) * Math.sin(elevation), Math.cos(azimuth) * Math.sin(elevation), Math.cos(elevation)];
                     const target = camera.target.map((coordinate, axis) => coordinate + up[axis] * shift);

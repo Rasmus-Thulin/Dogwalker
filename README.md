@@ -146,11 +146,9 @@ handling. With both routes active, continuous use makes at most 17,856 routing
 calls in a 31-day month, plus address lookups on server startup. No paid fallback
 is enabled. The compact tablet layout includes this route alongside Hubhult.
 
-Travel cards use four original generated vehicle sketches (Öresundståg, green
-Skånetrafiken bus, white Tesla for Hubhult and black Tesla for Jula). Prompts and
-asset provenance are in `assets/travel/PROMPTS.md`. Both car routes share one
-renderer and the same layout. The oldest fetched timestamp across the travel
-sources appears once in the panel’s lower right corner, with a stale label on failures. Blue
+Travel cards no longer show background illustrations; the original sketches and
+their prompts are retained in `assets/travel/`. Both car routes share one
+renderer and the same layout. Provider refresh timestamps are grouped in the page footer, with stale status on failures. Blue
 car route lines show start/end markers; train and bus cards have no route line; these markers do not imply intermediate
 stops. Car traffic slowdowns retain orange/red segments.
 
@@ -167,3 +165,14 @@ front three-quarter view, so the recenter operation cannot overwrite the zoom.
 The vehicle camera is zoomed closer in the compact stage, with a small vertical
 screen offset that visually places the tires against the information panel’s
 upper edge. Model playback is paused on load to keep the default pose stable.
+
+All source refresh statuses are plain text in the footer, for example
+`Laget.se – uppdaterad 22:40`. Provider links and per-card refresh notes are
+removed. The 3D surfaces paint above the telemetry panel edges so tires can
+overlap their top border. Both default cameras show the hood on the left and
+the tailgate on the right from a front three-quarter angle.
+
+The embed requests `ui_watermark=0` via Sketchfab’s supported customization
+option. Sketchfab only honors watermark removal on eligible Premium/Enterprise
+embeds; the logo can remain visible otherwise. No masking or cropping workaround
+is used.
