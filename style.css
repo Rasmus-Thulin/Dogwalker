@@ -3447,11 +3447,11 @@ body {
 .portrait-dashboard .transit-route .transit-time { flex-shrink: 0; }
 /* Let vehicle cards fill remaining tablet height without moving the calendars. */
 .portrait-dashboard .garage-board { flex: 1 0 auto; min-height: 0; }
-.portrait-dashboard .vehicle-panel { min-height: 0; grid-template-rows: auto clamp(80px, 10svh, 130px) auto auto; }
+.portrait-dashboard .vehicle-panel { min-height: 0; grid-template-rows: max-content minmax(clamp(80px, 10svh, 130px), 1fr) max-content; }
 .portrait-dashboard .vehicle-panel-surface { min-height: 0; height: 100%; }
 @media (min-width: 600px) and (max-width: 1400px) and (min-height: 540px) {
     .dashboard-top { min-height: clamp(280px, 32svh, 360px); }
-    .portrait-dashboard .vehicle-panel { grid-template-rows: auto clamp(85px, 9svh, 110px) auto auto; }
+    .portrait-dashboard .vehicle-panel { grid-template-rows: max-content minmax(clamp(85px, 9svh, 110px), 1fr) max-content; }
     .portrait-dashboard .overview-card { padding: 14px 10px 12px; gap: 8px; }
     .overview-label { font-size: .78rem; }
     .overview-detail { font-size: .65rem; }
@@ -3495,4 +3495,4 @@ body {
 #energyPriceStatus[hidden], .child-calendar-note[hidden] { display: none; }
 /* Let the vehicle and tires sit in front of the telemetry panel's top edge. */
 .portrait-dashboard .vehicle-panel-surface { z-index: 3; overflow: visible; transform: translateY(8px); }
-.portrait-dashboard .vehicle-panel .vehicle-panel-stats { z-index: 1; margin-top: -12px; margin-bottom: 0; padding-top: 20px; }
+.portrait-dashboard .vehicle-panel .vehicle-panel-stats { z-index: 1; margin-top: -12px; margin-bottom: 14px; padding-top: 20px; }
