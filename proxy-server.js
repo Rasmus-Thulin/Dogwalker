@@ -414,6 +414,57 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'Tibber Data API server is running' });
 });
 
+// CORS Proxy endpoint for Pixla Flyer (fetch images through proxy)
+app.get('/proxy', async (req, res) => {
+    const targetUrl = req.query.url;
+    
+    if (!targetUrl) {
+        return res.status(400).json({ error: 'Missing url parameter' });
+    }
+    
+    // Validate URL to prevent abuse
+    try {
+        const parsedUrl = new URL(targetUrl);
+        
+        // Only allow specific domains (whitelist)
+        const allowedDomains = [
+            'assets.cdn.jula.com',
+            'jula.com'
+        ];
+        
+        const isAllowed = allowedDomains.some(domain => 
+            parsedUrl.hostname === domain || parsedUrl.hostname.endsWith('.' + domain)
+        );
+        
+        if (!isAllowed) {
+            return res.status(403).json({ error: 'Domain not whitelisted' });
+        }
+    } catch (err) {
+        return res.status(400).json({ error: 'Invalid URL' });
+    }
+    
+    // Fetch the image
+    const protocol = targetUrl.startsWith('https') ? require('https') : require('http');
+    
+    protocol.get(targetUrl, {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; PixlaProxy/1.0)'
+        },
+        timeout: 10000
+    }, (proxyRes) => {
+        // Set appropriate headers
+        res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'image/jpeg');
+        res.setHeader('Content-Length', proxyRes.headers['content-length']);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        
+        proxyRes.pipe(res);
+    }).on('error', (err) => {
+        console.error('Proxy error:', err.message);
+        res.status(502).json({ error: 'Failed to fetch image' });
+    });
+});
+
 app.use(express.static(__dirname));
 
 app.listen(PORT, () => {
